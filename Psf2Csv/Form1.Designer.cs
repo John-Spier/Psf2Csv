@@ -53,13 +53,17 @@ namespace Psf2Csv
             this.colStack = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.colMD5 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.ofdAddFile = new System.Windows.Forms.OpenFileDialog();
+            this.sfdSaveList = new System.Windows.Forms.SaveFileDialog();
+            this.sbStatus = new System.Windows.Forms.StatusStrip();
+            this.sbiStatusText = new System.Windows.Forms.ToolStripStatusLabel();
             ((System.ComponentModel.ISupportInitialize)(this.dgvFiles)).BeginInit();
+            this.sbStatus.SuspendLayout();
             this.SuspendLayout();
             // 
             // btnAddFile
             // 
             this.btnAddFile.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.btnAddFile.Location = new System.Drawing.Point(13, 396);
+            this.btnAddFile.Location = new System.Drawing.Point(12, 441);
             this.btnAddFile.Name = "btnAddFile";
             this.btnAddFile.Size = new System.Drawing.Size(114, 29);
             this.btnAddFile.TabIndex = 1;
@@ -70,7 +74,7 @@ namespace Psf2Csv
             // btnAddPsf
             // 
             this.btnAddPsf.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.btnAddPsf.Location = new System.Drawing.Point(133, 396);
+            this.btnAddPsf.Location = new System.Drawing.Point(132, 441);
             this.btnAddPsf.Name = "btnAddPsf";
             this.btnAddPsf.Size = new System.Drawing.Size(79, 29);
             this.btnAddPsf.TabIndex = 2;
@@ -80,7 +84,7 @@ namespace Psf2Csv
             // btnBatchPsf
             // 
             this.btnBatchPsf.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.btnBatchPsf.Location = new System.Drawing.Point(218, 396);
+            this.btnBatchPsf.Location = new System.Drawing.Point(217, 441);
             this.btnBatchPsf.Name = "btnBatchPsf";
             this.btnBatchPsf.Size = new System.Drawing.Size(173, 29);
             this.btnBatchPsf.TabIndex = 3;
@@ -90,17 +94,18 @@ namespace Psf2Csv
             // btnSaveList
             // 
             this.btnSaveList.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.btnSaveList.Location = new System.Drawing.Point(397, 396);
+            this.btnSaveList.Location = new System.Drawing.Point(396, 441);
             this.btnSaveList.Name = "btnSaveList";
             this.btnSaveList.Size = new System.Drawing.Size(112, 29);
             this.btnSaveList.TabIndex = 4;
             this.btnSaveList.Text = "Save CSV/VFS File";
             this.btnSaveList.UseVisualStyleBackColor = true;
+            this.btnSaveList.Click += new System.EventHandler(this.btnSaveList_Click);
             // 
             // txtQLPTool
             // 
             this.txtQLPTool.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.txtQLPTool.Location = new System.Drawing.Point(515, 396);
+            this.txtQLPTool.Location = new System.Drawing.Point(514, 441);
             this.txtQLPTool.Name = "txtQLPTool";
             this.txtQLPTool.Size = new System.Drawing.Size(204, 23);
             this.txtQLPTool.TabIndex = 5;
@@ -108,7 +113,7 @@ namespace Psf2Csv
             // txtVFSTool
             // 
             this.txtVFSTool.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.txtVFSTool.Location = new System.Drawing.Point(515, 425);
+            this.txtVFSTool.Location = new System.Drawing.Point(514, 470);
             this.txtVFSTool.Name = "txtVFSTool";
             this.txtVFSTool.Size = new System.Drawing.Size(204, 23);
             this.txtVFSTool.TabIndex = 6;
@@ -117,7 +122,7 @@ namespace Psf2Csv
             // 
             this.lnkVFSTool.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.lnkVFSTool.AutoSize = true;
-            this.lnkVFSTool.Location = new System.Drawing.Point(725, 428);
+            this.lnkVFSTool.Location = new System.Drawing.Point(724, 473);
             this.lnkVFSTool.Name = "lnkVFSTool";
             this.lnkVFSTool.Size = new System.Drawing.Size(50, 15);
             this.lnkVFSTool.TabIndex = 8;
@@ -129,7 +134,7 @@ namespace Psf2Csv
             // 
             this.lnkQLPTool.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.lnkQLPTool.AutoSize = true;
-            this.lnkQLPTool.Location = new System.Drawing.Point(725, 399);
+            this.lnkQLPTool.Location = new System.Drawing.Point(724, 444);
             this.lnkQLPTool.Name = "lnkQLPTool";
             this.lnkQLPTool.Size = new System.Drawing.Size(53, 15);
             this.lnkQLPTool.TabIndex = 9;
@@ -141,7 +146,7 @@ namespace Psf2Csv
             // 
             this.lnkSeq2Sep.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.lnkSeq2Sep.AutoSize = true;
-            this.lnkSeq2Sep.Location = new System.Drawing.Point(456, 428);
+            this.lnkSeq2Sep.Location = new System.Drawing.Point(455, 473);
             this.lnkSeq2Sep.Name = "lnkSeq2Sep";
             this.lnkSeq2Sep.Size = new System.Drawing.Size(53, 15);
             this.lnkSeq2Sep.TabIndex = 11;
@@ -152,7 +157,7 @@ namespace Psf2Csv
             // txtSeq2Sep
             // 
             this.txtSeq2Sep.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.txtSeq2Sep.Location = new System.Drawing.Point(246, 425);
+            this.txtSeq2Sep.Location = new System.Drawing.Point(245, 470);
             this.txtSeq2Sep.Name = "txtSeq2Sep";
             this.txtSeq2Sep.Size = new System.Drawing.Size(204, 23);
             this.txtSeq2Sep.TabIndex = 10;
@@ -161,7 +166,7 @@ namespace Psf2Csv
             // 
             this.lnkDOSEMU.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.lnkDOSEMU.AutoSize = true;
-            this.lnkDOSEMU.Location = new System.Drawing.Point(181, 428);
+            this.lnkDOSEMU.Location = new System.Drawing.Point(180, 473);
             this.lnkDOSEMU.Name = "lnkDOSEMU";
             this.lnkDOSEMU.Size = new System.Drawing.Size(57, 15);
             this.lnkDOSEMU.TabIndex = 13;
@@ -172,7 +177,7 @@ namespace Psf2Csv
             // txtDOSEMU
             // 
             this.txtDOSEMU.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.txtDOSEMU.Location = new System.Drawing.Point(13, 425);
+            this.txtDOSEMU.Location = new System.Drawing.Point(12, 470);
             this.txtDOSEMU.Name = "txtDOSEMU";
             this.txtDOSEMU.Size = new System.Drawing.Size(162, 23);
             this.txtDOSEMU.TabIndex = 12;
@@ -207,6 +212,7 @@ namespace Psf2Csv
             // 
             // dgvFiles
             // 
+            this.dgvFiles.AllowDrop = true;
             this.dgvFiles.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
@@ -220,33 +226,44 @@ namespace Psf2Csv
             this.dgvFiles.Location = new System.Drawing.Point(15, 13);
             this.dgvFiles.Name = "dgvFiles";
             this.dgvFiles.RowTemplate.Height = 25;
-            this.dgvFiles.Size = new System.Drawing.Size(759, 373);
+            this.dgvFiles.Size = new System.Drawing.Size(759, 422);
             this.dgvFiles.TabIndex = 14;
+            this.dgvFiles.UserDeletingRow += new System.Windows.Forms.DataGridViewRowCancelEventHandler(this.dgvFiles_UserDeletingRow);
+            this.dgvFiles.DragDrop += new System.Windows.Forms.DragEventHandler(this.dgvFiles_DragDrop);
+            this.dgvFiles.DragEnter += new System.Windows.Forms.DragEventHandler(this.dgvFiles_DragEnter);
             // 
             // colFileName
             // 
             this.colFileName.HeaderText = "Filename";
+            this.colFileName.MaxInputLength = 255;
             this.colFileName.Name = "colFileName";
+            this.colFileName.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.Programmatic;
             // 
             // colVFSName
             // 
             this.colVFSName.HeaderText = "VFS Filename";
+            this.colVFSName.MaxInputLength = 63;
             this.colVFSName.Name = "colVFSName";
+            this.colVFSName.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.Programmatic;
             // 
             // colTrackOf
             // 
             this.colTrackOf.HeaderText = "Track Source";
             this.colTrackOf.Name = "colTrackOf";
+            this.colTrackOf.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.Programmatic;
             // 
             // colStack
             // 
             this.colStack.HeaderText = "Type/Stack";
             this.colStack.Name = "colStack";
+            this.colStack.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.Programmatic;
             // 
             // colMD5
             // 
             this.colMD5.HeaderText = "VH/VB MD5";
             this.colMD5.Name = "colMD5";
+            this.colMD5.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.Programmatic;
+            this.colMD5.Visible = false;
             // 
             // ofdAddFile
             // 
@@ -254,11 +271,33 @@ namespace Psf2Csv
             this.ofdAddFile.RestoreDirectory = true;
             this.ofdAddFile.Title = "Select file to add";
             // 
+            // sfdSaveList
+            // 
+            this.sfdSaveList.Filter = "CSV files|*.csv|VFS files|*.vfs|All files|*.*";
+            this.sfdSaveList.Title = "Save CSV/VFS";
+            // 
+            // sbStatus
+            // 
+            this.sbStatus.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.sbiStatusText});
+            this.sbStatus.Location = new System.Drawing.Point(0, 499);
+            this.sbStatus.Name = "sbStatus";
+            this.sbStatus.Size = new System.Drawing.Size(790, 22);
+            this.sbStatus.TabIndex = 15;
+            this.sbStatus.Text = "statusStrip1";
+            // 
+            // sbiStatusText
+            // 
+            this.sbiStatusText.Name = "sbiStatusText";
+            this.sbiStatusText.Size = new System.Drawing.Size(39, 17);
+            this.sbiStatusText.Text = "Ready";
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(790, 450);
+            this.ClientSize = new System.Drawing.Size(790, 521);
+            this.Controls.Add(this.sbStatus);
             this.Controls.Add(this.dgvFiles);
             this.Controls.Add(this.lnkDOSEMU);
             this.Controls.Add(this.txtDOSEMU);
@@ -277,6 +316,8 @@ namespace Psf2Csv
             this.Text = "PSF to CSV";
             this.Load += new System.EventHandler(this.Form1_Load);
             ((System.ComponentModel.ISupportInitialize)(this.dgvFiles)).EndInit();
+            this.sbStatus.ResumeLayout(false);
+            this.sbStatus.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -300,12 +341,15 @@ namespace Psf2Csv
         private System.Windows.Forms.OpenFileDialog ofdQLPTool;
         private System.Windows.Forms.OpenFileDialog ofdVFSTool;
         private System.Windows.Forms.DataGridView dgvFiles;
+        private System.Windows.Forms.OpenFileDialog ofdAddFile;
+        private System.Windows.Forms.SaveFileDialog sfdSaveList;
+        private System.Windows.Forms.StatusStrip sbStatus;
+        private System.Windows.Forms.ToolStripStatusLabel sbiStatusText;
         private System.Windows.Forms.DataGridViewTextBoxColumn colFileName;
         private System.Windows.Forms.DataGridViewTextBoxColumn colVFSName;
         private System.Windows.Forms.DataGridViewTextBoxColumn colTrackOf;
         private System.Windows.Forms.DataGridViewTextBoxColumn colStack;
         private System.Windows.Forms.DataGridViewTextBoxColumn colMD5;
-        private System.Windows.Forms.OpenFileDialog ofdAddFile;
     }
 }
 

@@ -90,6 +90,12 @@
   <data name="ofdAddFile.Filter" xml:space="preserve">
     <value>HITMOD files|*.hit|Packed PS1 XMPlay files|*.pxm|Packed SEQ/VH/VB files|*.psq|Packed SEP/VH/VB files|*.psp|MeidoMenu files|*.txt|MeidoModMenu files|*.mnu|PSX-EXE files|*.psx;*.exe|All files|*.*|ADD ALL FILES IN THIS DIRECTORY|*</value>
   </data>
+  <metadata name="sfdSaveList.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+    <value>242, 44</value>
+  </metadata>
+  <metadata name="sbStatus.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+    <value>353, 44</value>
+  </metadata>
   <assembly alias="System.Drawing" name="System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
   <data name="$this.Icon" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>
