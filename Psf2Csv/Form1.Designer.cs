@@ -47,15 +47,19 @@ namespace Psf2Csv
             this.ofdQLPTool = new System.Windows.Forms.OpenFileDialog();
             this.ofdVFSTool = new System.Windows.Forms.OpenFileDialog();
             this.dgvFiles = new System.Windows.Forms.DataGridView();
-            this.colFileName = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.colVFSName = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.colTrackOf = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.colStack = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.colMD5 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.ofdAddFile = new System.Windows.Forms.OpenFileDialog();
             this.sfdSaveList = new System.Windows.Forms.SaveFileDialog();
             this.sbStatus = new System.Windows.Forms.StatusStrip();
             this.sbiStatusText = new System.Windows.Forms.ToolStripStatusLabel();
+            this.fbdAddPsf = new System.Windows.Forms.FolderBrowserDialog();
+            this.colFileName = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.colVFSName = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.colTrackOf = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.colStack = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.colVhMD5 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.colVhName = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.colVbMD5 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.colVBName = new System.Windows.Forms.DataGridViewTextBoxColumn();
             ((System.ComponentModel.ISupportInitialize)(this.dgvFiles)).BeginInit();
             this.sbStatus.SuspendLayout();
             this.SuspendLayout();
@@ -80,6 +84,7 @@ namespace Psf2Csv
             this.btnAddPsf.TabIndex = 2;
             this.btnAddPsf.Text = "Add PSF Set";
             this.btnAddPsf.UseVisualStyleBackColor = true;
+            this.btnAddPsf.Click += new System.EventHandler(this.btnAddPsf_Click);
             // 
             // btnBatchPsf
             // 
@@ -222,7 +227,10 @@ namespace Psf2Csv
             this.colVFSName,
             this.colTrackOf,
             this.colStack,
-            this.colMD5});
+            this.colVhMD5,
+            this.colVhName,
+            this.colVbMD5,
+            this.colVBName});
             this.dgvFiles.Location = new System.Drawing.Point(15, 13);
             this.dgvFiles.Name = "dgvFiles";
             this.dgvFiles.RowTemplate.Height = 25;
@@ -231,39 +239,6 @@ namespace Psf2Csv
             this.dgvFiles.UserDeletingRow += new System.Windows.Forms.DataGridViewRowCancelEventHandler(this.dgvFiles_UserDeletingRow);
             this.dgvFiles.DragDrop += new System.Windows.Forms.DragEventHandler(this.dgvFiles_DragDrop);
             this.dgvFiles.DragEnter += new System.Windows.Forms.DragEventHandler(this.dgvFiles_DragEnter);
-            // 
-            // colFileName
-            // 
-            this.colFileName.HeaderText = "Filename";
-            this.colFileName.MaxInputLength = 255;
-            this.colFileName.Name = "colFileName";
-            this.colFileName.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.Programmatic;
-            // 
-            // colVFSName
-            // 
-            this.colVFSName.HeaderText = "VFS Filename";
-            this.colVFSName.MaxInputLength = 63;
-            this.colVFSName.Name = "colVFSName";
-            this.colVFSName.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.Programmatic;
-            // 
-            // colTrackOf
-            // 
-            this.colTrackOf.HeaderText = "Track Source";
-            this.colTrackOf.Name = "colTrackOf";
-            this.colTrackOf.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.Programmatic;
-            // 
-            // colStack
-            // 
-            this.colStack.HeaderText = "Type/Stack";
-            this.colStack.Name = "colStack";
-            this.colStack.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.Programmatic;
-            // 
-            // colMD5
-            // 
-            this.colMD5.HeaderText = "VH/VB MD5";
-            this.colMD5.Name = "colMD5";
-            this.colMD5.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.Programmatic;
-            this.colMD5.Visible = false;
             // 
             // ofdAddFile
             // 
@@ -291,6 +266,61 @@ namespace Psf2Csv
             this.sbiStatusText.Name = "sbiStatusText";
             this.sbiStatusText.Size = new System.Drawing.Size(39, 17);
             this.sbiStatusText.Text = "Ready";
+            // 
+            // fbdAddPsf
+            // 
+            this.fbdAddPsf.Description = "PSF Set folder (Data files extracted with VGMToolbox)";
+            this.fbdAddPsf.UseDescriptionForTitle = true;
+            // 
+            // colFileName
+            // 
+            this.colFileName.HeaderText = "Filename";
+            this.colFileName.MaxInputLength = 255;
+            this.colFileName.Name = "colFileName";
+            this.colFileName.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.Programmatic;
+            // 
+            // colVFSName
+            // 
+            this.colVFSName.HeaderText = "VFS Filename";
+            this.colVFSName.MaxInputLength = 63;
+            this.colVFSName.Name = "colVFSName";
+            this.colVFSName.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.Programmatic;
+            // 
+            // colTrackOf
+            // 
+            this.colTrackOf.HeaderText = "Track Source";
+            this.colTrackOf.Name = "colTrackOf";
+            this.colTrackOf.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.Programmatic;
+            // 
+            // colStack
+            // 
+            this.colStack.HeaderText = "Type/Stack";
+            this.colStack.Name = "colStack";
+            this.colStack.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.Programmatic;
+            // 
+            // colVhMD5
+            // 
+            this.colVhMD5.HeaderText = "VH Hash";
+            this.colVhMD5.Name = "colVhMD5";
+            this.colVhMD5.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.Programmatic;
+            // 
+            // colVhName
+            // 
+            this.colVhName.HeaderText = "VH Filename";
+            this.colVhName.Name = "colVhName";
+            this.colVhName.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.Programmatic;
+            // 
+            // colVbMD5
+            // 
+            this.colVbMD5.HeaderText = "VB Hash";
+            this.colVbMD5.Name = "colVbMD5";
+            this.colVbMD5.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.Programmatic;
+            // 
+            // colVBName
+            // 
+            this.colVBName.HeaderText = "VB Filename";
+            this.colVBName.Name = "colVBName";
+            this.colVBName.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.Programmatic;
             // 
             // Form1
             // 
@@ -345,11 +375,15 @@ namespace Psf2Csv
         private System.Windows.Forms.SaveFileDialog sfdSaveList;
         private System.Windows.Forms.StatusStrip sbStatus;
         private System.Windows.Forms.ToolStripStatusLabel sbiStatusText;
+        private System.Windows.Forms.FolderBrowserDialog fbdAddPsf;
         private System.Windows.Forms.DataGridViewTextBoxColumn colFileName;
         private System.Windows.Forms.DataGridViewTextBoxColumn colVFSName;
         private System.Windows.Forms.DataGridViewTextBoxColumn colTrackOf;
         private System.Windows.Forms.DataGridViewTextBoxColumn colStack;
-        private System.Windows.Forms.DataGridViewTextBoxColumn colMD5;
+        private System.Windows.Forms.DataGridViewTextBoxColumn colVhMD5;
+        private System.Windows.Forms.DataGridViewTextBoxColumn colVhName;
+        private System.Windows.Forms.DataGridViewTextBoxColumn colVbMD5;
+        private System.Windows.Forms.DataGridViewTextBoxColumn colVBName;
     }
 }
 

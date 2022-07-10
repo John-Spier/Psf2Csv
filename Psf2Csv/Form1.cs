@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.IO;
+using System.Security.Cryptography;
 using CsvHelper;
 using CsvHelper.Configuration;
 
@@ -81,18 +82,11 @@ namespace Psf2Csv
 
         private void btnAddFile_Click(object sender, EventArgs e)
         {
-            if (ofdAddFile.ShowDialog()==DialogResult.OK)
+            if (ofdAddFile.ShowDialog() == DialogResult.OK)
             {
                 string[] file = new string[4];
                 file[0] = ofdAddFile.FileName;
-                if (Path.GetFileNameWithoutExtension(ofdAddFile.FileName).Length < 64)
-                {
-                    file[1] = Path.GetFileNameWithoutExtension(ofdAddFile.FileName);
-                } else
-                {
-                    file[1] = Path.GetFileNameWithoutExtension(ofdAddFile.FileName).Substring(0, 63);
-                }
-                
+                file[1] = TruncateString(Path.GetFileNameWithoutExtension(ofdAddFile.FileName), 63);
                 file[2] = "-1";
                 if (ofdAddFile.FilterIndex <= extn.Length)
                 {
@@ -117,16 +111,7 @@ namespace Psf2Csv
                         foreach (string s in Directory.GetFiles(Path.GetDirectoryName(ofdAddFile.FileName), '*' + extn[i], SearchOption.AllDirectories))
                         {
                             file[0] = s;
-                            if (Path.GetFileNameWithoutExtension(s).Length < 64)
-                            {
-                                file[1] = Path.GetFileNameWithoutExtension(s);
-                            }
-                            else
-                            {
-                                file[1] = Path.GetFileNameWithoutExtension(s).Substring(0, 63);
-                            }
-
-                            //file[1] = Path.GetFileNameWithoutExtension(s);
+                            file[1] = TruncateString(Path.GetFileNameWithoutExtension(s), 63);
                             file[2] = "-1";
                             file[3] = extstk[i];
                             dgvFiles.Rows.Add(file);
@@ -143,32 +128,14 @@ namespace Psf2Csv
 
         private void btnSaveList_Click(object sender, EventArgs e)
         {
-            dgvFiles.AllowUserToAddRows = false; //stops the empty row at the end from getting into the csv
+            
             if (sfdSaveList.ShowDialog() == DialogResult.OK)
             {
-                int[] quoted = { 2, 3 };
-                vfsRecord rec = new vfsRecord { };
-                StreamWriter stream = new StreamWriter(sfdSaveList.FileName, false);
-                CsvConfiguration csv = new CsvConfiguration(System.Globalization.CultureInfo.InvariantCulture);
-                csv.HasHeaderRecord = false;
-                csv.ShouldQuote = args => false;
-                CsvWriter writer = new CsvWriter(stream, csv);
-                //writer.Configuration.HasHeaderRecord = false;
-                foreach (DataGridViewRow r in dgvFiles.Rows)
-                {
-                    
-                    rec.stack = (string)r.Cells[3].Value;
-                    rec.source = (string)r.Cells[2].Value;
-                    rec.intname = '"' + (string)r.Cells[1].Value + '"';
-                    rec.extname = '"' + (string)r.Cells[0].Value + '"';
-                    writer.WriteRecord(rec);
-                    writer.NextRecord();
-
-                }
-                writer.Flush();
-                writer.Dispose();
+                //int[] quoted = { 2, 3 };
+                SaveCsvFile(sfdSaveList.FileName, sfdSaveList.FilterIndex);
+                
             }
-            dgvFiles.AllowUserToAddRows = true;
+            
         }
 
         private void dgvFiles_UserDeletingRow(object sender, DataGridViewRowCancelEventArgs e)
@@ -208,14 +175,7 @@ namespace Psf2Csv
                     } else
                     {
                         file[0] = f;
-                        if (Path.GetFileNameWithoutExtension(f).Length < 64)
-                        {
-                            file[1] = Path.GetFileNameWithoutExtension(f);
-                        }
-                        else
-                        {
-                            file[1] = Path.GetFileNameWithoutExtension(f).Substring(0, 63);
-                        }
+                        file[1] = TruncateString(Path.GetFileNameWithoutExtension(f), 63);
                         file[2] = "-1";
                         for (int i = 0; i < extn.Length; i++)
                         {
@@ -244,6 +204,121 @@ namespace Psf2Csv
             }
 
         }
+
+        private void btnAddPsf_Click(object sender, EventArgs e)
+        {
+            if (fbdAddPsf.ShowDialog() == DialogResult.OK)
+            {
+                AddPsfSet(fbdAddPsf.SelectedPath);
+            }
+        }
+
+        public void AddPsfSet (string dir)
+        {
+            string[] vab = new string[8]; //remove extra columns and merge strings for easier comparison
+            foreach (string s in Directory.GetFiles(dir, "*.seq", SearchOption.AllDirectories))
+            {
+                vab[0] = TruncateString(s, 255);
+                vab[1] = TruncateString(Path.GetFileNameWithoutExtension(Path.GetFileNameWithoutExtension(s)), 63); // removes data_0000
+                try
+                {
+                    vab[5] = FindVhVb(s, ".vh");
+                    vab[4] = Base64Hash(vab[5]);
+                    vab[7] = FindVhVb(s, ".vb");
+                    vab[6] = Base64Hash(vab[7]);
+                    dgvFiles.Rows.Add(vab);
+                } catch (Exception cx)
+                {
+                    sbiStatusText.Text = cx.Message;
+                }
+            }
+        }
+        public string Base64Hash (string file)
+        {
+            
+            
+            try
+            {
+                SHA256 hash = SHA256.Create();
+                FileStream reader = new FileStream(file, FileMode.Open, FileAccess.Read);
+                byte[] hashbin = hash.ComputeHash(reader);
+                return Convert.ToBase64String(hashbin);
+            } 
+            catch
+            {
+                throw;
+            }
+            //return "";
+        }
+
+        public string FindVhVb (string s, string ext)
+        {
+            try
+            {
+                if (File.Exists(Path.GetDirectoryName(s) + Path.DirectorySeparatorChar + Path.GetFileNameWithoutExtension(s) + ext))
+                {
+                    return Path.GetDirectoryName(s) + Path.DirectorySeparatorChar + Path.GetFileNameWithoutExtension(s) + ext;
+
+                }
+                else
+                {
+                    foreach (string t in Directory.GetFiles(Path.GetDirectoryName(s), ext, SearchOption.AllDirectories))
+                    {
+                        return t;
+                    }
+                }
+            }
+            catch
+            {
+                throw;
+            }
+            return "";
+        }
+
+        public string TruncateString (string s, int l)
+        {
+            if (s.Length <= l)
+            {
+                return s;
+            } else
+            {
+                return s.Substring(0, l);
+            }
+        }
+
+        public void SaveCsvFile(string filename, int index)
+        {
+            try
+            {
+                dgvFiles.AllowUserToAddRows = false; //stops the empty row at the end from getting into the csv
+                vfsRecord rec = new vfsRecord { };
+                StreamWriter stream = new StreamWriter(filename, false);
+                CsvConfiguration csv = new CsvConfiguration(System.Globalization.CultureInfo.InvariantCulture);
+                csv.HasHeaderRecord = false;
+                csv.ShouldQuote = args => false;
+                CsvWriter writer = new CsvWriter(stream, csv);
+                //writer.Configuration.HasHeaderRecord = false;
+                foreach (DataGridViewRow r in dgvFiles.Rows)
+                {
+
+                    rec.stack = (string)r.Cells[3].Value;
+                    rec.source = (string)r.Cells[2].Value;
+                    rec.intname = '"' + (string)r.Cells[1].Value + '"';
+                    rec.extname = '"' + (string)r.Cells[0].Value + '"';
+                    writer.WriteRecord(rec);
+                    writer.NextRecord();
+
+                }
+                writer.Flush();
+                writer.Dispose();
+                dgvFiles.AllowUserToAddRows = true;
+            } 
+            catch (Exception xx)
+            {
+                sbiStatusText.Text = xx.Message;
+            }
+        }
+
     }
 
     public class vfsRecord
