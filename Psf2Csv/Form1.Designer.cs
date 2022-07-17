@@ -56,9 +56,9 @@ namespace Psf2Csv
             this.colVFSName = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.colTrackOf = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.colStack = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.colVhMD5 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.colSHA256 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.colVhName = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.colVbMD5 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.colTemp = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.colVBName = new System.Windows.Forms.DataGridViewTextBoxColumn();
             ((System.ComponentModel.ISupportInitialize)(this.dgvFiles)).BeginInit();
             this.sbStatus.SuspendLayout();
@@ -227,9 +227,9 @@ namespace Psf2Csv
             this.colVFSName,
             this.colTrackOf,
             this.colStack,
-            this.colVhMD5,
+            this.colSHA256,
             this.colVhName,
-            this.colVbMD5,
+            this.colTemp,
             this.colVBName});
             this.dgvFiles.Location = new System.Drawing.Point(15, 13);
             this.dgvFiles.Name = "dgvFiles";
@@ -298,11 +298,11 @@ namespace Psf2Csv
             this.colStack.Name = "colStack";
             this.colStack.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.Programmatic;
             // 
-            // colVhMD5
+            // colSHA256
             // 
-            this.colVhMD5.HeaderText = "VH Hash";
-            this.colVhMD5.Name = "colVhMD5";
-            this.colVhMD5.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.Programmatic;
+            this.colSHA256.HeaderText = "VH+VB Hash";
+            this.colSHA256.Name = "colSHA256";
+            this.colSHA256.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.Programmatic;
             // 
             // colVhName
             // 
@@ -310,11 +310,11 @@ namespace Psf2Csv
             this.colVhName.Name = "colVhName";
             this.colVhName.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.Programmatic;
             // 
-            // colVbMD5
+            // colTemp
             // 
-            this.colVbMD5.HeaderText = "VB Hash";
-            this.colVbMD5.Name = "colVbMD5";
-            this.colVbMD5.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.Programmatic;
+            this.colTemp.HeaderText = "Track №";
+            this.colTemp.Name = "colTemp";
+            this.colTemp.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.Programmatic;
             // 
             // colVBName
             // 
@@ -380,9 +380,9 @@ namespace Psf2Csv
         private System.Windows.Forms.DataGridViewTextBoxColumn colVFSName;
         private System.Windows.Forms.DataGridViewTextBoxColumn colTrackOf;
         private System.Windows.Forms.DataGridViewTextBoxColumn colStack;
-        private System.Windows.Forms.DataGridViewTextBoxColumn colVhMD5;
+        private System.Windows.Forms.DataGridViewTextBoxColumn colSHA256;
         private System.Windows.Forms.DataGridViewTextBoxColumn colVhName;
-        private System.Windows.Forms.DataGridViewTextBoxColumn colVbMD5;
+        private System.Windows.Forms.DataGridViewTextBoxColumn colTemp;
         private System.Windows.Forms.DataGridViewTextBoxColumn colVBName;
     }
 }

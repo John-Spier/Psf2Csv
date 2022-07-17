@@ -38,6 +38,8 @@ namespace Psf2Csv
             "FFFFFFFD",
             "801FFFF0"
         };
+
+        private const int sep_min = 0x01000000;
         public Form1()
         {
             InitializeComponent();
@@ -132,7 +134,7 @@ namespace Psf2Csv
             if (sfdSaveList.ShowDialog() == DialogResult.OK)
             {
                 //int[] quoted = { 2, 3 };
-                SaveCsvFile(sfdSaveList.FileName, sfdSaveList.FilterIndex);
+                SaveCsvFile(sfdSaveList.FileName, sfdSaveList.FilterIndex, dgvFiles, sbiStatusText);
                 
             }
             
@@ -140,7 +142,7 @@ namespace Psf2Csv
 
         private void dgvFiles_UserDeletingRow(object sender, DataGridViewRowCancelEventArgs e)
         {
-            Int32 t = 0;
+            int t = 0;
             foreach (DataGridViewRow r in dgvFiles.Rows)
             {
                 try
@@ -209,11 +211,11 @@ namespace Psf2Csv
         {
             if (fbdAddPsf.ShowDialog() == DialogResult.OK)
             {
-                AddPsfSet(fbdAddPsf.SelectedPath);
+                AddPsfSet(fbdAddPsf.SelectedPath, sbiStatusText);
             }
         }
 
-        public void AddPsfSet (string dir)
+        public void AddPsfSet (string dir, ToolStripStatusLabel sbiStatusText)
         {
             string[] vab = new string[8]; //remove extra columns and merge strings for easier comparison
             foreach (string s in Directory.GetFiles(dir, "*.seq", SearchOption.AllDirectories))
@@ -224,12 +226,52 @@ namespace Psf2Csv
                 {
                     vab[5] = FindVhVb(s, ".vh");
                     vab[4] = Base64Hash(vab[5]);
+                    
                     vab[7] = FindVhVb(s, ".vb");
-                    vab[6] = Base64Hash(vab[7]);
+                    vab[4] += Base64Hash(vab[7]);
+                    //vab[6] = "TRUE";
                     dgvFiles.Rows.Add(vab);
                 } catch (Exception cx)
                 {
                     sbiStatusText.Text = cx.Message;
+                }
+
+
+
+            }
+            dgvFiles.ClearSelection();
+
+            Dictionary<string, int> psflib = new Dictionary<string, int>();
+            int skip;
+            int seq;
+            //rows will always be added to the end
+
+            foreach (DataGridViewRow f in dgvFiles.Rows)
+            {
+                if (f.Cells[4].Value != null && f.Cells[6].Value == null)
+                {
+                    if (psflib.TryGetValue(f.Cells[4].Value.ToString(), out seq))
+                    {
+
+                        dgvFiles.Rows[seq].Cells[4].Value += (" " + f.Cells[0].Value.ToString());
+                        f.Cells[2].Value = seq.ToString();
+                        skip = sep_min + (int)dgvFiles.Rows[seq].Cells[6].Value;
+                        f.Cells[3].Value = skip.ToString("X8");
+                        dgvFiles.Rows[seq].Cells[6].Value = (int)dgvFiles.Rows[seq].Cells[6].Value + 1;
+
+                        f.Cells[4].Value = null;
+                    }
+                    else
+                    {
+                        psflib.Add(f.Cells[4].Value.ToString(), f.Index);
+                        f.Cells[6].ValueType = typeof(int);
+                        f.Cells[6].Value = 1;
+                        f.Cells[4].Value = f.Cells[0].Value.ToString();
+                        f.Cells[2].Value = "-1";
+                        //f.Cells[3].Value = "FFFFFF04";
+                        //non-track SEP value will always restart.
+                        f.Cells[3].Value = sep_min.ToString("X8");
+                    }
                 }
             }
         }
@@ -286,7 +328,7 @@ namespace Psf2Csv
             }
         }
 
-        public void SaveCsvFile(string filename, int index)
+        public void SaveCsvFile(string filename, int index, DataGridView dgvFiles, ToolStripStatusLabel sbiStatusText)
         {
             try
             {
@@ -300,11 +342,11 @@ namespace Psf2Csv
                 //writer.Configuration.HasHeaderRecord = false;
                 foreach (DataGridViewRow r in dgvFiles.Rows)
                 {
-
-                    rec.stack = (string)r.Cells[3].Value;
-                    rec.source = (string)r.Cells[2].Value;
-                    rec.intname = '"' + (string)r.Cells[1].Value + '"';
-                    rec.extname = '"' + (string)r.Cells[0].Value + '"';
+                    //would have used integers for these but oh well
+                    rec.stack = r.Cells[3].Value.ToString();
+                    rec.source = r.Cells[2].Value.ToString();
+                    rec.intname = '"' + r.Cells[1].Value.ToString() + '"';
+                    rec.extname = '"' + r.Cells[0].Value.ToString() + '"';
                     writer.WriteRecord(rec);
                     writer.NextRecord();
 
