@@ -174,8 +174,9 @@ namespace Psf2Csv
                 {
                     if (Directory.Exists(f))
                     {
-
-                    } else
+                        AddPsfSet(f, sbiStatusText, dgvFiles, File.Exists(txtDOSEMU.Text), File.Exists(txtDOSEMU.Text), txtDOSEMU.Text, txtSeq2Sep.Text);
+                    }
+                    else
                     {
                         file[0] = f;
                         file[1] = TruncateString(Path.GetFileNameWithoutExtension(f), 63);
@@ -216,9 +217,18 @@ namespace Psf2Csv
             }
         }
 
+        public void DelFileExt(string dir, string ext)
+        {
+            foreach (string s in Directory.GetFiles(dir, ext, SearchOption.TopDirectoryOnly))
+            {
+                //MessageBox.Show(Directory.GetCurrentDirectory(), s);
+                File.Delete(s);
+            }
+        }
+
         public void AddPsfSet (string dir, ToolStripStatusLabel sbiStatusText, DataGridView dgvFiles, bool tempfn, bool dosemu, string dospath, string s2spath)
         {
-            string[] vab = new string[8]; //remove extra columns and merge strings for easier comparison
+            string[] vab = new string[8];
             foreach (string s in Directory.GetFiles(dir, "*.seq", SearchOption.AllDirectories))
             {
                 vab[0] = TruncateString(s, 255);
@@ -230,7 +240,6 @@ namespace Psf2Csv
                     
                     vab[7] = FindVhVb(s, ".vb");
                     vab[4] += Base64Hash(vab[7]);
-                    //vab[6] = "TRUE";
                     dgvFiles.Rows.Add(vab);
                 } catch (Exception cx)
                 {
@@ -245,17 +254,11 @@ namespace Psf2Csv
             Dictionary<string, int> psflib = new Dictionary<string, int>();
             int skip;
             int seq;
-            //rows will always be added to the end
-            
-            //bool tempfn = File.Exists(txtDOSEMU.Text); //change this if your dos emu works better
             string tempfile;
             if (tempfn)
             {
-                foreach (string s in Directory.GetFiles(Directory.GetCurrentDirectory(), "*.seq"))
-                {
-                    //MessageBox.Show(Directory.GetCurrentDirectory(), s);
-                    File.Delete(s);
-                }
+                DelFileExt(Directory.GetCurrentDirectory(), "*.seq");
+                DelFileExt(Directory.GetCurrentDirectory(), "*.sep");
             }
             foreach (DataGridViewRow f in dgvFiles.Rows)
             {
@@ -271,12 +274,13 @@ namespace Psf2Csv
                             {
                                 tempfile = Path.GetFileNameWithoutExtension(Path.GetRandomFileName()) + ".seq";
                             }
+                            //MessageBox.Show(Path.GetFullPath(tempfile), f.Cells[0].Value.ToString());
+                            File.Copy(f.Cells[0].Value.ToString(), Path.GetFullPath(tempfile));
                         }
                         else
                         {
                             tempfile = '"' + f.Cells[0].Value.ToString() + '"';
                         }
-
                         dgvFiles.Rows[seq].Cells[4].Value += (" " + tempfile );
                         f.Cells[2].Value = seq.ToString();
                         skip = sep_min + (int)dgvFiles.Rows[seq].Cells[6].Value;
@@ -302,13 +306,14 @@ namespace Psf2Csv
                             {
                                 tempfile = Path.GetFileNameWithoutExtension(Path.GetRandomFileName()) + ".seq";
                             }
-                            tempfile = " -o " + tempsep + " " + tempfile;
+                            File.Copy(f.Cells[0].Value.ToString(), Path.GetFullPath(tempfile));
+                            tempfile = "-o " + tempsep + " " + tempfile;
                             f.Cells[0].Value = tempsep;
                         }
                         else
                         {
-                            f.Cells[0].Value = Path.GetDirectoryName(f.Cells[0].Value.ToString()) + Path.DirectorySeparatorChar + Path.GetFileNameWithoutExtension(f.Cells[0].Value.ToString());
-                            tempfile = " -o " + '"' + f.Cells[0].Value.ToString() + '"';
+                            f.Cells[0].Value = Path.GetDirectoryName(f.Cells[0].Value.ToString()) + Path.DirectorySeparatorChar + Path.GetFileNameWithoutExtension(f.Cells[0].Value.ToString() + ".sep");
+                            tempfile = "-o " + '"' + f.Cells[0].Value.ToString() + '"';
                         }
 
                         f.Cells[4].Value = tempfile;
@@ -321,54 +326,58 @@ namespace Psf2Csv
             }
             if (File.Exists(s2spath))
             {
-                //bool dosemu = File.Exists(txtDOSEMU.Text);
-                //bool dosemu = tempfn;
-                Process seq2sep = new Process();
-                foreach (int v in psflib.Values)
-                {
-                    //dgvFiles.Rows[v].Cells[0].Value = Path.GetDirectoryName(dgvFiles.Rows[v].Cells[0].Value.ToString()) + Path.DirectorySeparatorChar + Path.GetFileNameWithoutExtension(dgvFiles.Rows[v].Cells[0].Value.ToString()) + ".sep";
-                    if (dosemu)
-                    {
-                        seq2sep.StartInfo.FileName = Path.GetFullPath(dospath);
-                        seq2sep.StartInfo.Arguments = '"' + Path.GetFullPath(s2spath) + '"' + dgvFiles.Rows[v].Cells[4].Value.ToString();
-                        //seq2sep.StartInfo.Arguments = '"' + Path.GetFullPath(txtSeq2Sep.Text) + '"' + " -o " + '"' + dgvFiles.Rows[v].Cells[0].Value.ToString() + '"' + " " + dgvFiles.Rows[v].Cells[4].Value.ToString();
+                FixSepFiles(psflib, dosemu, dospath, s2spath, dgvFiles);
 
-                        MessageBox.Show(seq2sep.StartInfo.Arguments, seq2sep.StartInfo.FileName);
-                        //seq2sep.StartInfo.FileName = "cmd.exe";
-                        //seq2sep.StartInfo.Arguments = "/k " + '"' + Path.GetFullPath(txtDOSEMU.Text) + '"' + " " + '"' + Path.GetFullPath(txtSeq2Sep.Text) + '"' + " -o " + '"' + dgvFiles.Rows[v].Cells[0].Value.ToString() + '"' + " " + dgvFiles.Rows[v].Cells[4].Value.ToString();
-                        
-                    }
-                    else
-                    {
-                        MessageBox.Show(seq2sep.StartInfo.Arguments, seq2sep.StartInfo.FileName);
-                        seq2sep.StartInfo.FileName = Path.GetFullPath(s2spath);
-                        //seq2sep.StartInfo.Arguments = " -o " + '"' + dgvFiles.Rows[v].Cells[0].Value.ToString() + '"' + " " + dgvFiles.Rows[v].Cells[4].Value.ToString();
-                        seq2sep.StartInfo.Arguments = dgvFiles.Rows[v].Cells[4].Value.ToString();
-                    }
-                    try
-                    {
-                        seq2sep.Start();
-                        seq2sep.WaitForExit();
-                    } 
-                    catch (Exception px)
-                    {
-                        sbiStatusText.Text = px.Message;
-                    }
-                    //need to get random filename here and copy the files to the working directorty with that filename. 
-                }
-                /*
-                seq2sep.StartInfo.FileName = txtSeq2Sep.Text;
-                seq2sep.StartInfo.Arguments = "z:\\account.txt";
-                seq2sep.Start();
-                seq2sep.WaitForExit();
-                */
-                //MessageBox.Show("exe done");
             } 
             else
             {
 
             }
         }
+
+        public void FixSepFiles(Dictionary<string,int> psflib, bool dosemu, string dospath, string s2spath, DataGridView dgvFiles)
+        {
+            Process seq2sep = new Process();
+            
+            foreach (int v in psflib.Values)
+            {
+
+                if (dosemu)
+                {
+                    
+                    //seq2sep.StartInfo.FileName = Path.GetFullPath(dospath);
+                    //seq2sep.StartInfo.Arguments = '"' + Path.GetFullPath(s2spath) + '"' + " " + dgvFiles.Rows[v].Cells[4].Value.ToString();
+
+
+                    seq2sep.StartInfo.FileName = dospath;
+                    seq2sep.StartInfo.Arguments = s2spath + " " + dgvFiles.Rows[v].Cells[4].Value.ToString();
+                    //seq2sep.StartInfo.RedirectStandardOutput = true;
+                    //MessageBox.Show(seq2sep.StartInfo.Arguments, seq2sep.StartInfo.FileName);
+                    
+                    
+                    //seq2sep.StartInfo.UseShellExecute = true;
+                    //seq2sep.StartInfo.FileName = "cmd.exe";
+                    //seq2sep.StartInfo.Arguments = "/k " + '"' + Path.GetFullPath(dospath) + '"' + " " + '"' + Path.GetFullPath(s2spath) + '"' + " " + dgvFiles.Rows[v].Cells[4].Value.ToString();
+                }
+                else
+                {
+                    
+                    seq2sep.StartInfo.FileName = Path.GetFullPath(s2spath);
+                    seq2sep.StartInfo.Arguments = dgvFiles.Rows[v].Cells[4].Value.ToString();
+                    //MessageBox.Show(seq2sep.StartInfo.Arguments, seq2sep.StartInfo.FileName);
+                }
+                try
+                {
+                    seq2sep.Start();
+                    seq2sep.WaitForExit();
+                }
+                catch (Exception px)
+                {
+                    sbiStatusText.Text = px.Message;
+                }
+            }
+        }
+
         public string Base64Hash (string file)
         {
             
