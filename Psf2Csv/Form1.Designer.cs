@@ -47,11 +47,6 @@ namespace Psf2Csv
             this.ofdQLPTool = new System.Windows.Forms.OpenFileDialog();
             this.ofdVFSTool = new System.Windows.Forms.OpenFileDialog();
             this.dgvFiles = new System.Windows.Forms.DataGridView();
-            this.ofdAddFile = new System.Windows.Forms.OpenFileDialog();
-            this.sfdSaveList = new System.Windows.Forms.SaveFileDialog();
-            this.sbStatus = new System.Windows.Forms.StatusStrip();
-            this.sbiStatusText = new System.Windows.Forms.ToolStripStatusLabel();
-            this.fbdAddPsf = new System.Windows.Forms.FolderBrowserDialog();
             this.colFileName = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.colVFSName = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.colTrackOf = new System.Windows.Forms.DataGridViewTextBoxColumn();
@@ -60,6 +55,11 @@ namespace Psf2Csv
             this.colVhName = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.colTemp = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.colVBName = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.ofdAddFile = new System.Windows.Forms.OpenFileDialog();
+            this.sfdSaveList = new System.Windows.Forms.SaveFileDialog();
+            this.sbStatus = new System.Windows.Forms.StatusStrip();
+            this.sbiStatusText = new System.Windows.Forms.ToolStripStatusLabel();
+            this.fbdAddPsf = new System.Windows.Forms.FolderBrowserDialog();
             ((System.ComponentModel.ISupportInitialize)(this.dgvFiles)).BeginInit();
             this.sbStatus.SuspendLayout();
             this.SuspendLayout();
@@ -114,6 +114,7 @@ namespace Psf2Csv
             this.txtQLPTool.Name = "txtQLPTool";
             this.txtQLPTool.Size = new System.Drawing.Size(204, 23);
             this.txtQLPTool.TabIndex = 5;
+            this.txtQLPTool.Text = "qlptool.exe";
             // 
             // txtVFSTool
             // 
@@ -122,6 +123,7 @@ namespace Psf2Csv
             this.txtVFSTool.Name = "txtVFSTool";
             this.txtVFSTool.Size = new System.Drawing.Size(204, 23);
             this.txtVFSTool.TabIndex = 6;
+            this.txtVFSTool.Text = "vfstool.exe";
             // 
             // lnkVFSTool
             // 
@@ -166,6 +168,7 @@ namespace Psf2Csv
             this.txtSeq2Sep.Name = "txtSeq2Sep";
             this.txtSeq2Sep.Size = new System.Drawing.Size(204, 23);
             this.txtSeq2Sep.TabIndex = 10;
+            this.txtSeq2Sep.Text = "seq2sep.exe";
             // 
             // lnkDOSEMU
             // 
@@ -186,6 +189,7 @@ namespace Psf2Csv
             this.txtDOSEMU.Name = "txtDOSEMU";
             this.txtDOSEMU.Size = new System.Drawing.Size(162, 23);
             this.txtDOSEMU.TabIndex = 12;
+            this.txtDOSEMU.Text = "msdos.exe";
             // 
             // ofdDOSEMU
             // 
@@ -240,38 +244,6 @@ namespace Psf2Csv
             this.dgvFiles.DragDrop += new System.Windows.Forms.DragEventHandler(this.dgvFiles_DragDrop);
             this.dgvFiles.DragEnter += new System.Windows.Forms.DragEventHandler(this.dgvFiles_DragEnter);
             // 
-            // ofdAddFile
-            // 
-            this.ofdAddFile.Filter = resources.GetString("ofdAddFile.Filter");
-            this.ofdAddFile.RestoreDirectory = true;
-            this.ofdAddFile.Title = "Select file to add";
-            // 
-            // sfdSaveList
-            // 
-            this.sfdSaveList.Filter = "CSV files|*.csv|VFS files|*.vfs|All files|*.*";
-            this.sfdSaveList.Title = "Save CSV/VFS";
-            // 
-            // sbStatus
-            // 
-            this.sbStatus.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.sbiStatusText});
-            this.sbStatus.Location = new System.Drawing.Point(0, 499);
-            this.sbStatus.Name = "sbStatus";
-            this.sbStatus.Size = new System.Drawing.Size(790, 22);
-            this.sbStatus.TabIndex = 15;
-            this.sbStatus.Text = "statusStrip1";
-            // 
-            // sbiStatusText
-            // 
-            this.sbiStatusText.Name = "sbiStatusText";
-            this.sbiStatusText.Size = new System.Drawing.Size(39, 17);
-            this.sbiStatusText.Text = "Ready";
-            // 
-            // fbdAddPsf
-            // 
-            this.fbdAddPsf.Description = "PSF Set folder (Data files extracted with VGMToolbox)";
-            this.fbdAddPsf.UseDescriptionForTitle = true;
-            // 
             // colFileName
             // 
             this.colFileName.HeaderText = "Filename";
@@ -321,6 +293,38 @@ namespace Psf2Csv
             this.colVBName.HeaderText = "VB Filename";
             this.colVBName.Name = "colVBName";
             this.colVBName.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.Programmatic;
+            // 
+            // ofdAddFile
+            // 
+            this.ofdAddFile.Filter = resources.GetString("ofdAddFile.Filter");
+            this.ofdAddFile.RestoreDirectory = true;
+            this.ofdAddFile.Title = "Select file to add";
+            // 
+            // sfdSaveList
+            // 
+            this.sfdSaveList.Filter = "CSV files|*.csv|VFS files|*.vfs|All files|*.*";
+            this.sfdSaveList.Title = "Save CSV/VFS";
+            // 
+            // sbStatus
+            // 
+            this.sbStatus.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.sbiStatusText});
+            this.sbStatus.Location = new System.Drawing.Point(0, 499);
+            this.sbStatus.Name = "sbStatus";
+            this.sbStatus.Size = new System.Drawing.Size(790, 22);
+            this.sbStatus.TabIndex = 15;
+            this.sbStatus.Text = "statusStrip1";
+            // 
+            // sbiStatusText
+            // 
+            this.sbiStatusText.Name = "sbiStatusText";
+            this.sbiStatusText.Size = new System.Drawing.Size(39, 17);
+            this.sbiStatusText.Text = "Ready";
+            // 
+            // fbdAddPsf
+            // 
+            this.fbdAddPsf.Description = "PSF Set folder (Data files extracted with VGMToolbox)";
+            this.fbdAddPsf.UseDescriptionForTitle = true;
             // 
             // Form1
             // 
