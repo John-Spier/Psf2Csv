@@ -174,7 +174,7 @@ namespace Psf2Csv
                 {
                     if (Directory.Exists(f))
                     {
-                        AddPsfSet(f, sbiStatusText, dgvFiles, File.Exists(txtDOSEMU.Text), File.Exists(txtDOSEMU.Text), txtDOSEMU.Text, txtSeq2Sep.Text);
+                        AddPsfSet(f, sbiStatusText, dgvFiles, File.Exists(txtDOSEMU.Text), File.Exists(txtDOSEMU.Text), txtDOSEMU.Text, txtSeq2Sep.Text, txtQLPTool.Text);
                     }
                     else
                     {
@@ -213,7 +213,7 @@ namespace Psf2Csv
         {
             if (fbdAddPsf.ShowDialog() == DialogResult.OK)
             {
-                AddPsfSet(fbdAddPsf.SelectedPath, sbiStatusText, dgvFiles, File.Exists(txtDOSEMU.Text), File.Exists(txtDOSEMU.Text), txtDOSEMU.Text, txtSeq2Sep.Text);
+                AddPsfSet(fbdAddPsf.SelectedPath, sbiStatusText, dgvFiles, File.Exists(txtDOSEMU.Text), File.Exists(txtDOSEMU.Text), txtDOSEMU.Text, txtSeq2Sep.Text, txtQLPTool.Text);
             }
         }
 
@@ -226,7 +226,7 @@ namespace Psf2Csv
             }
         }
 
-        public void AddPsfSet (string dir, ToolStripStatusLabel sbiStatusText, DataGridView dgvFiles, bool tempfn, bool dosemu, string dospath, string s2spath)
+        public void AddPsfSet (string dir, ToolStripStatusLabel sbiStatusText, DataGridView dgvFiles, bool tempfn, bool dosemu, string dospath, string s2spath, string qtpath)
         {
             string[] vab = new string[8];
             foreach (string s in Directory.GetFiles(dir, "*.seq", SearchOption.AllDirectories))
@@ -246,25 +246,40 @@ namespace Psf2Csv
                     sbiStatusText.Text = cx.Message;
                 }
 
-
-
             }
+            if (File.Exists(qtpath))
+            {
+
+
+                if (File.Exists(s2spath))
+                {
+                    FixSepFiles(tempfn, dosemu, dospath, s2spath, dgvFiles, qtpath);
+                }
+                else
+                {
+
+                }
+            }
+            else
+            {
+                sbiStatusText.Text = "QLPTool not found!";
+            }
+        }
+
+        public void FixSepFiles(bool tempfn, bool dosemu, string dospath, string s2spath, DataGridView dgvFiles, string qtpath)
+        {
             dgvFiles.ClearSelection();
 
             Dictionary<string, int> psflib = new Dictionary<string, int>();
             int skip;
             int seq;
             string tempfile;
-            if (tempfn)
-            {
-                DelFileExt(Directory.GetCurrentDirectory(), "*.seq");
-                DelFileExt(Directory.GetCurrentDirectory(), "*.sep");
-            }
+
             foreach (DataGridViewRow f in dgvFiles.Rows)
             {
                 if (f.Cells[4].Value != null && f.Cells[6].Value == null)
                 {
-                    
+
                     if (psflib.TryGetValue(f.Cells[4].Value.ToString(), out seq))
                     {
                         if (tempfn)
@@ -281,12 +296,12 @@ namespace Psf2Csv
                         {
                             tempfile = '"' + f.Cells[0].Value.ToString() + '"';
                         }
-                        dgvFiles.Rows[seq].Cells[4].Value += (" " + tempfile );
+                        dgvFiles.Rows[seq].Cells[4].Value += (" " + tempfile);
                         f.Cells[2].Value = seq.ToString();
                         skip = sep_min + (int)dgvFiles.Rows[seq].Cells[6].Value;
                         f.Cells[3].Value = skip.ToString("X8");
                         dgvFiles.Rows[seq].Cells[6].Value = (int)dgvFiles.Rows[seq].Cells[6].Value + 1;
-
+                        f.Cells[0].Value = Path.GetFullPath(dgvFiles.Rows[seq].Cells[0].Value.ToString());
                         f.Cells[4].Value = null;
                     }
                     else
@@ -324,40 +339,20 @@ namespace Psf2Csv
                     }
                 }
             }
-            if (File.Exists(s2spath))
-            {
-                FixSepFiles(psflib, dosemu, dospath, s2spath, dgvFiles);
 
-            } 
-            else
-            {
 
-            }
-        }
 
-        public void FixSepFiles(Dictionary<string,int> psflib, bool dosemu, string dospath, string s2spath, DataGridView dgvFiles)
-        {
+
             Process seq2sep = new Process();
-            
+            Process qlptool = new Process();
             foreach (int v in psflib.Values)
             {
 
                 if (dosemu)
                 {
-                    
-                    //seq2sep.StartInfo.FileName = Path.GetFullPath(dospath);
-                    //seq2sep.StartInfo.Arguments = '"' + Path.GetFullPath(s2spath) + '"' + " " + dgvFiles.Rows[v].Cells[4].Value.ToString();
-
-
                     seq2sep.StartInfo.FileName = dospath;
                     seq2sep.StartInfo.Arguments = s2spath + " " + dgvFiles.Rows[v].Cells[4].Value.ToString();
-                    //seq2sep.StartInfo.RedirectStandardOutput = true;
                     //MessageBox.Show(seq2sep.StartInfo.Arguments, seq2sep.StartInfo.FileName);
-                    
-                    
-                    //seq2sep.StartInfo.UseShellExecute = true;
-                    //seq2sep.StartInfo.FileName = "cmd.exe";
-                    //seq2sep.StartInfo.Arguments = "/k " + '"' + Path.GetFullPath(dospath) + '"' + " " + '"' + Path.GetFullPath(s2spath) + '"' + " " + dgvFiles.Rows[v].Cells[4].Value.ToString();
                 }
                 else
                 {
@@ -370,11 +365,53 @@ namespace Psf2Csv
                 {
                     seq2sep.Start();
                     seq2sep.WaitForExit();
+                    if (tempfn)
+                    {
+                        dgvFiles.Rows[v].Cells[0].Value = Path.GetFullPath(dgvFiles.Rows[v].Cells[0].Value.ToString());
+                    }
+                    string trkn = Path.GetDirectoryName(dgvFiles.Rows[v].Cells[0].Value.ToString()) + Path.DirectorySeparatorChar + Path.GetFileNameWithoutExtension(dgvFiles.Rows[v].Cells[0].Value.ToString()) + ".vt";
+                    string pspn = Path.GetDirectoryName(dgvFiles.Rows[v].Cells[5].Value.ToString()) + Path.DirectorySeparatorChar + Path.GetFileNameWithoutExtension(dgvFiles.Rows[v].Cells[5].Value.ToString()) + ".psp";
+                    short tracknum = Convert.ToInt16(dgvFiles.Rows[v].Cells[6].Value);
+                    byte[] trackfile = new byte[2];
+                    if (BitConverter.IsLittleEndian)
+                    {
+                        trackfile = BitConverter.GetBytes(tracknum);
+                    } else
+                    {
+                        trackfile = BitConverter.GetBytes(tracknum);
+                        byte swapend = trackfile[1];
+                        trackfile[1] = trackfile[0];
+                        trackfile[0] = swapend;
+                    }
+                    BinaryWriter writer = new BinaryWriter(File.OpenWrite(trkn));
+                    writer.Write(trackfile);
+                    writer.Flush();
+                    writer.Close();
+                    qlptool.StartInfo.ArgumentList.Clear();
+                    qlptool.StartInfo.FileName = qtpath;
+                    //qlptool.StartInfo.FileName = "cmd.exe";
+                    //qlptool.StartInfo.ArgumentList.Add("/k");
+                    //qlptool.StartInfo.ArgumentList.Add(qtpath);
+                    qlptool.StartInfo.ArgumentList.Add(pspn);
+                    qlptool.StartInfo.ArgumentList.Add(dgvFiles.Rows[v].Cells[0].Value.ToString());
+                    qlptool.StartInfo.ArgumentList.Add(dgvFiles.Rows[v].Cells[5].Value.ToString());
+                    qlptool.StartInfo.ArgumentList.Add(dgvFiles.Rows[v].Cells[7].Value.ToString());
+                    qlptool.StartInfo.ArgumentList.Add(trkn);
+
+                    qlptool.Start();
+                    qlptool.WaitForExit();
+                    dgvFiles.Rows[v].Cells[0].Value = pspn;
                 }
                 catch (Exception px)
                 {
                     sbiStatusText.Text = px.Message;
                 }
+            }
+            if (tempfn)
+            {
+                DelFileExt(Directory.GetCurrentDirectory(), "*.seq");
+                DelFileExt(Directory.GetCurrentDirectory(), "*.sep");
+                DelFileExt(Directory.GetCurrentDirectory(), "*.vt");
             }
         }
 
@@ -387,6 +424,7 @@ namespace Psf2Csv
                 SHA256 hash = SHA256.Create();
                 FileStream reader = new FileStream(file, FileMode.Open, FileAccess.Read);
                 byte[] hashbin = hash.ComputeHash(reader);
+                reader.Close();
                 return Convert.ToBase64String(hashbin);
             } 
             catch
