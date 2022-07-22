@@ -232,7 +232,8 @@ namespace Psf2Csv
             foreach (string s in Directory.GetFiles(dir, "*.seq", SearchOption.AllDirectories))
             {
                 vab[0] = TruncateString(s, 255);
-                vab[1] = TruncateString(Path.GetFileNameWithoutExtension(Path.GetFileNameWithoutExtension(s)), 63); // removes data_0000
+                //vab[1] = TruncateString(Path.GetFileNameWithoutExtension(Path.GetFileNameWithoutExtension(s)), 63); // removes data_0000
+                vab[1] = TruncateString(Path.GetFileNameWithoutExtension(Path.GetDirectoryName(s)), 63);
                 try
                 {
                     vab[5] = FindVhVb(s, ".vh");
