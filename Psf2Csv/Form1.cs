@@ -77,7 +77,7 @@ namespace Psf2Csv
 
         private void lnkVFSTool_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
         {
-            if (ofdQLPTool.ShowDialog() == DialogResult.OK)
+            if (ofdVFSTool.ShowDialog() == DialogResult.OK)
             {
                 txtVFSTool.Text = ofdVFSTool.FileName;
             }
@@ -99,7 +99,7 @@ namespace Psf2Csv
                 {
                     for (int i = 0; i<extn.Length; i++)
                     {
-                        if (Path.GetExtension(ofdAddFile.FileName) == extn[i])
+                        if (Path.GetExtension(ofdAddFile.FileName).ToLowerInvariant() == extn[i])
                         {
                             file[3] = extstk[i];
                             
@@ -135,7 +135,7 @@ namespace Psf2Csv
             if (sfdSaveList.ShowDialog() == DialogResult.OK)
             {
                 //int[] quoted = { 2, 3 };
-                SaveCsvFile(sfdSaveList.FileName, sfdSaveList.FilterIndex, dgvFiles, sbiStatusText);
+                SaveCsvFile(sfdSaveList.FileName, sfdSaveList.FilterIndex, dgvFiles, sbiStatusText, txtVFSTool.Text);
                 
             }
             
@@ -183,7 +183,7 @@ namespace Psf2Csv
                         file[2] = "-1";
                         for (int i = 0; i < extn.Length; i++)
                         {
-                            if (Path.GetExtension(f) == extn[i])
+                            if (Path.GetExtension(f).ToLowerInvariant() == extn[i])
                             {
                                 file[3] = extstk[i];
 
@@ -253,11 +253,11 @@ namespace Psf2Csv
 
                 if (File.Exists(s2spath))
                 {
-                    FixSepFiles(tempfn, dosemu, dospath, s2spath, dgvFiles, qtpath);
+                    FixSepFiles(tempfn, dosemu, dospath, s2spath, dgvFiles, qtpath, sbiStatusText);
                 }
                 else
                 {
-
+                    FixSeqFiles(qtpath, dgvFiles, sbiStatusText);
                 }
             }
             else
@@ -266,7 +266,37 @@ namespace Psf2Csv
             }
         }
 
-        public void FixSepFiles(bool tempfn, bool dosemu, string dospath, string s2spath, DataGridView dgvFiles, string qtpath)
+        public void FixSeqFiles(string qtpath, DataGridView dgvFiles, ToolStripStatusLabel sbiStatusText)
+        {
+            Process qlptool = new Process();
+            foreach (DataGridViewRow f in dgvFiles.Rows)
+            {
+                if (f.Cells[4].Value != null && f.Cells[6].Value == null)
+                {
+                    f.Cells[2].Value = "-1";
+                    f.Cells[3].Value = "FFFFFF03";
+                    f.Cells[6].ValueType = typeof(string);
+                    f.Cells[6].Value = f.Cells[0].Value.ToString();
+                    f.Cells[0].Value = Path.GetDirectoryName(f.Cells[6].Value.ToString()) + Path.DirectorySeparatorChar + f.Cells[1].Value.ToString() + ".psq"; //use fixed name in case of manually copying files out
+                    qlptool.StartInfo.ArgumentList.Clear();
+                    qlptool.StartInfo.FileName = qtpath;
+                    qlptool.StartInfo.ArgumentList.Add(f.Cells[0].Value.ToString());
+                    qlptool.StartInfo.ArgumentList.Add(f.Cells[6].Value.ToString());
+                    qlptool.StartInfo.ArgumentList.Add(f.Cells[5].Value.ToString());
+                    qlptool.StartInfo.ArgumentList.Add(f.Cells[7].Value.ToString());
+                    try
+                    {
+                        qlptool.Start();
+                        qlptool.WaitForExit();
+                    } catch (Exception qx)
+                    {
+                        sbiStatusText.Text = qx.Message;
+                    }
+                }
+            }
+        }
+
+        public void FixSepFiles(bool tempfn, bool dosemu, string dospath, string s2spath, DataGridView dgvFiles, string qtpath, ToolStripStatusLabel sbiStatusText)
         {
             dgvFiles.ClearSelection();
 
@@ -301,7 +331,7 @@ namespace Psf2Csv
                         skip = sep_min + (int)dgvFiles.Rows[seq].Cells[6].Value;
                         f.Cells[3].Value = skip.ToString("X8");
                         dgvFiles.Rows[seq].Cells[6].Value = (int)dgvFiles.Rows[seq].Cells[6].Value + 1;
-                        f.Cells[0].Value = Path.GetFullPath(dgvFiles.Rows[seq].Cells[0].Value.ToString());
+                        //f.Cells[0].Value = Path.GetFullPath(dgvFiles.Rows[seq].Cells[0].Value.ToString());
                         f.Cells[4].Value = null;
                     }
                     else
@@ -327,7 +357,7 @@ namespace Psf2Csv
                         }
                         else
                         {
-                            f.Cells[0].Value = Path.GetDirectoryName(f.Cells[0].Value.ToString()) + Path.DirectorySeparatorChar + Path.GetFileNameWithoutExtension(f.Cells[0].Value.ToString() + ".sep");
+                            f.Cells[0].Value = Path.GetDirectoryName(f.Cells[0].Value.ToString()) + Path.DirectorySeparatorChar + f.Cells[1].Value.ToString() + ".sep";
                             tempfile = "-o " + '"' + f.Cells[0].Value.ToString() + '"';
                         }
 
@@ -370,7 +400,7 @@ namespace Psf2Csv
                         dgvFiles.Rows[v].Cells[0].Value = Path.GetFullPath(dgvFiles.Rows[v].Cells[0].Value.ToString());
                     }
                     string trkn = Path.GetDirectoryName(dgvFiles.Rows[v].Cells[0].Value.ToString()) + Path.DirectorySeparatorChar + Path.GetFileNameWithoutExtension(dgvFiles.Rows[v].Cells[0].Value.ToString()) + ".vt";
-                    string pspn = Path.GetDirectoryName(dgvFiles.Rows[v].Cells[5].Value.ToString()) + Path.DirectorySeparatorChar + Path.GetFileNameWithoutExtension(dgvFiles.Rows[v].Cells[5].Value.ToString()) + ".psp";
+                    string pspn = Path.GetDirectoryName(dgvFiles.Rows[v].Cells[5].Value.ToString()) + Path.DirectorySeparatorChar + dgvFiles.Rows[v].Cells[1].Value.ToString() + ".psp";
                     short tracknum = Convert.ToInt16(dgvFiles.Rows[v].Cells[6].Value);
                     byte[] trackfile = new byte[2];
                     if (BitConverter.IsLittleEndian)
@@ -469,13 +499,36 @@ namespace Psf2Csv
             }
         }
 
-        public void SaveCsvFile(string filename, int index, DataGridView dgvFiles, ToolStripStatusLabel sbiStatusText)
+        public void SaveCsvFile(string filename, int index, DataGridView dgvFiles, ToolStripStatusLabel sbiStatusText, string vtpath)
         {
             try
             {
+                string tempcsv;
+                if (index == 2 || (index == 3 && Path.GetExtension(filename).ToLowerInvariant() == ".vfs"))
+                {
+                    if (File.Exists(vtpath))
+                    {
+                        tempcsv = Path.GetFileNameWithoutExtension(Path.GetRandomFileName()) + ".csv";
+                        while (File.Exists(tempcsv))
+                        {
+                            tempcsv = Path.GetFileNameWithoutExtension(Path.GetRandomFileName()) + ".csv";
+                        }
+                    }
+                    else
+                    {
+                        sbiStatusText.Text = "VFSTool not found!";
+                        return;
+                    }
+
+                }
+                else
+                {
+                    tempcsv = filename;
+                    //return;
+                }
                 dgvFiles.AllowUserToAddRows = false; //stops the empty row at the end from getting into the csv
                 vfsRecord rec = new vfsRecord { };
-                StreamWriter stream = new StreamWriter(filename, false);
+                StreamWriter stream = new StreamWriter(tempcsv, false);
                 CsvConfiguration csv = new CsvConfiguration(System.Globalization.CultureInfo.InvariantCulture);
                 csv.HasHeaderRecord = false;
                 csv.ShouldQuote = args => false;
@@ -495,6 +548,27 @@ namespace Psf2Csv
                 writer.Flush();
                 writer.Dispose();
                 dgvFiles.AllowUserToAddRows = true;
+
+                if (index == 2 || (index == 3 && Path.GetExtension(filename).ToLowerInvariant() == ".vfs"))
+                {
+                    if (File.Exists(vtpath))
+                    {
+
+                        Process vfstool = new Process();
+                        vfstool.StartInfo.FileName = vtpath;
+                        vfstool.StartInfo.ArgumentList.Clear();
+                        vfstool.StartInfo.ArgumentList.Add("-c");
+                        vfstool.StartInfo.ArgumentList.Add(tempcsv);
+                        vfstool.StartInfo.ArgumentList.Add(filename);
+                        vfstool.Start();
+                        vfstool.WaitForExit();
+                        File.Delete(tempcsv);
+                    }
+                    else
+                    {
+                        sbiStatusText.Text = "VFSTool not found!";
+                    }
+                }
             } 
             catch (Exception xx)
             {
@@ -502,6 +576,30 @@ namespace Psf2Csv
             }
         }
 
+        private void btnBatchPsf_Click(object sender, EventArgs e)
+        {
+            if (MessageBox.Show("All files currently in the list will be DELETED! Continue?", "PSF to CSV", MessageBoxButtons.YesNo, MessageBoxIcon.Exclamation) == DialogResult.Yes)
+            {
+                if (fbdBatchPsf.ShowDialog() == DialogResult.OK)
+                {
+                    foreach (string d in Directory.GetDirectories(fbdBatchPsf.SelectedPath))
+                    {
+                        //MessageBox.Show(Path.GetFileName(d));
+                        dgvFiles.Rows.Clear();
+                        AddPsfSet(d, sbiStatusText, dgvFiles, File.Exists(txtDOSEMU.Text), File.Exists(txtDOSEMU.Text), txtDOSEMU.Text, txtSeq2Sep.Text, txtQLPTool.Text);
+                        if (File.Exists(txtVFSTool.Text))
+                        {
+                            SaveCsvFile(Path.Combine(fbdBatchPsf.SelectedPath, Path.GetFileName(d)) + ".vfs", 2, dgvFiles, sbiStatusText, txtVFSTool.Text);
+                        }
+                        else
+                        {
+                            SaveCsvFile(Path.Combine(fbdBatchPsf.SelectedPath, Path.GetFileName(d)) + ".csv", 1, dgvFiles, sbiStatusText, txtVFSTool.Text);
+                        }
+
+                    }
+                }
+            }
+        }
     }
 
     public class vfsRecord

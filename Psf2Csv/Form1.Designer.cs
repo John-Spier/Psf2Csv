@@ -47,6 +47,12 @@ namespace Psf2Csv
             this.ofdQLPTool = new System.Windows.Forms.OpenFileDialog();
             this.ofdVFSTool = new System.Windows.Forms.OpenFileDialog();
             this.dgvFiles = new System.Windows.Forms.DataGridView();
+            this.ofdAddFile = new System.Windows.Forms.OpenFileDialog();
+            this.sfdSaveList = new System.Windows.Forms.SaveFileDialog();
+            this.sbStatus = new System.Windows.Forms.StatusStrip();
+            this.sbiStatusText = new System.Windows.Forms.ToolStripStatusLabel();
+            this.fbdAddPsf = new System.Windows.Forms.FolderBrowserDialog();
+            this.fbdBatchPsf = new System.Windows.Forms.FolderBrowserDialog();
             this.colFileName = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.colVFSName = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.colTrackOf = new System.Windows.Forms.DataGridViewTextBoxColumn();
@@ -55,11 +61,6 @@ namespace Psf2Csv
             this.colVhName = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.colTemp = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.colVBName = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.ofdAddFile = new System.Windows.Forms.OpenFileDialog();
-            this.sfdSaveList = new System.Windows.Forms.SaveFileDialog();
-            this.sbStatus = new System.Windows.Forms.StatusStrip();
-            this.sbiStatusText = new System.Windows.Forms.ToolStripStatusLabel();
-            this.fbdAddPsf = new System.Windows.Forms.FolderBrowserDialog();
             ((System.ComponentModel.ISupportInitialize)(this.dgvFiles)).BeginInit();
             this.sbStatus.SuspendLayout();
             this.SuspendLayout();
@@ -95,6 +96,7 @@ namespace Psf2Csv
             this.btnBatchPsf.TabIndex = 3;
             this.btnBatchPsf.Text = "Make PSF Sets into VFS Files";
             this.btnBatchPsf.UseVisualStyleBackColor = true;
+            this.btnBatchPsf.Click += new System.EventHandler(this.btnBatchPsf_Click);
             // 
             // btnSaveList
             // 
@@ -244,56 +246,6 @@ namespace Psf2Csv
             this.dgvFiles.DragDrop += new System.Windows.Forms.DragEventHandler(this.dgvFiles_DragDrop);
             this.dgvFiles.DragEnter += new System.Windows.Forms.DragEventHandler(this.dgvFiles_DragEnter);
             // 
-            // colFileName
-            // 
-            this.colFileName.HeaderText = "Filename";
-            this.colFileName.MaxInputLength = 255;
-            this.colFileName.Name = "colFileName";
-            this.colFileName.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.Programmatic;
-            // 
-            // colVFSName
-            // 
-            this.colVFSName.HeaderText = "VFS Filename";
-            this.colVFSName.MaxInputLength = 63;
-            this.colVFSName.Name = "colVFSName";
-            this.colVFSName.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.Programmatic;
-            // 
-            // colTrackOf
-            // 
-            this.colTrackOf.HeaderText = "Track Source";
-            this.colTrackOf.Name = "colTrackOf";
-            this.colTrackOf.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.Programmatic;
-            // 
-            // colStack
-            // 
-            this.colStack.HeaderText = "Type/Stack";
-            this.colStack.Name = "colStack";
-            this.colStack.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.Programmatic;
-            // 
-            // colSHA256
-            // 
-            this.colSHA256.HeaderText = "VH+VB Hash";
-            this.colSHA256.Name = "colSHA256";
-            this.colSHA256.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.Programmatic;
-            // 
-            // colVhName
-            // 
-            this.colVhName.HeaderText = "VH Filename";
-            this.colVhName.Name = "colVhName";
-            this.colVhName.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.Programmatic;
-            // 
-            // colTemp
-            // 
-            this.colTemp.HeaderText = "Track №";
-            this.colTemp.Name = "colTemp";
-            this.colTemp.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.Programmatic;
-            // 
-            // colVBName
-            // 
-            this.colVBName.HeaderText = "VB Filename";
-            this.colVBName.Name = "colVBName";
-            this.colVBName.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.Programmatic;
-            // 
             // ofdAddFile
             // 
             this.ofdAddFile.Filter = resources.GetString("ofdAddFile.Filter");
@@ -325,6 +277,65 @@ namespace Psf2Csv
             // 
             this.fbdAddPsf.Description = "PSF Set folder (Data files extracted with VGMToolbox)";
             this.fbdAddPsf.UseDescriptionForTitle = true;
+            // 
+            // fbdBatchPsf
+            // 
+            this.fbdBatchPsf.Description = "Select directory containing PSF sets";
+            this.fbdBatchPsf.UseDescriptionForTitle = true;
+            // 
+            // colFileName
+            // 
+            this.colFileName.HeaderText = "Filename";
+            this.colFileName.MaxInputLength = 255;
+            this.colFileName.Name = "colFileName";
+            this.colFileName.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.Programmatic;
+            // 
+            // colVFSName
+            // 
+            this.colVFSName.HeaderText = "VFS Filename";
+            this.colVFSName.MaxInputLength = 63;
+            this.colVFSName.Name = "colVFSName";
+            this.colVFSName.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.Programmatic;
+            // 
+            // colTrackOf
+            // 
+            this.colTrackOf.HeaderText = "Track Source";
+            this.colTrackOf.Name = "colTrackOf";
+            this.colTrackOf.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.Programmatic;
+            // 
+            // colStack
+            // 
+            this.colStack.HeaderText = "Type/Stack";
+            this.colStack.Name = "colStack";
+            this.colStack.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.Programmatic;
+            // 
+            // colSHA256
+            // 
+            this.colSHA256.HeaderText = "VH+VB Hash";
+            this.colSHA256.Name = "colSHA256";
+            this.colSHA256.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.Programmatic;
+            this.colSHA256.Visible = false;
+            // 
+            // colVhName
+            // 
+            this.colVhName.HeaderText = "VH Filename";
+            this.colVhName.Name = "colVhName";
+            this.colVhName.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.Programmatic;
+            this.colVhName.Visible = false;
+            // 
+            // colTemp
+            // 
+            this.colTemp.HeaderText = "Track №";
+            this.colTemp.Name = "colTemp";
+            this.colTemp.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.Programmatic;
+            this.colTemp.Visible = false;
+            // 
+            // colVBName
+            // 
+            this.colVBName.HeaderText = "VB Filename";
+            this.colVBName.Name = "colVBName";
+            this.colVBName.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.Programmatic;
+            this.colVBName.Visible = false;
             // 
             // Form1
             // 
@@ -380,6 +391,7 @@ namespace Psf2Csv
         private System.Windows.Forms.StatusStrip sbStatus;
         private System.Windows.Forms.ToolStripStatusLabel sbiStatusText;
         private System.Windows.Forms.FolderBrowserDialog fbdAddPsf;
+        private System.Windows.Forms.FolderBrowserDialog fbdBatchPsf;
         private System.Windows.Forms.DataGridViewTextBoxColumn colFileName;
         private System.Windows.Forms.DataGridViewTextBoxColumn colVFSName;
         private System.Windows.Forms.DataGridViewTextBoxColumn colTrackOf;
