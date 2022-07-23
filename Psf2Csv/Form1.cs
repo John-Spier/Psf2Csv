@@ -232,14 +232,22 @@ namespace Psf2Csv
             foreach (string s in Directory.GetFiles(dir, "*.seq", SearchOption.AllDirectories))
             {
                 vab[0] = TruncateString(s, 255);
-                //vab[1] = TruncateString(Path.GetFileNameWithoutExtension(Path.GetFileNameWithoutExtension(s)), 63); // removes data_0000
-                vab[1] = TruncateString(Path.GetFileNameWithoutExtension(Path.GetDirectoryName(s)), 63);
+                
+                if (Path.GetDirectoryName(s).ToLowerInvariant() == Path.GetFullPath(dir).ToLowerInvariant())
+                {
+                    vab[1] = TruncateString(Path.GetFileNameWithoutExtension(s), 63); //use filename if in root
+                }
+                else
+                {
+                    vab[1] = TruncateString(Path.GetFileNameWithoutExtension(Path.GetDirectoryName(s)), 63); //if not in root use dir name
+                }
+
                 try
                 {
                     vab[5] = FindVhVb(s, ".vh");
                     vab[4] = Base64Hash(vab[5]);
-                    
-                    vab[7] = FindVhVb(s, ".vb");
+                    vab[7] = FindVhVb(vab[5], ".vb");
+                    //vab[7] = FindVhVb(s, ".vb");
                     vab[4] += Base64Hash(vab[7]);
                     dgvFiles.Rows.Add(vab);
                 } catch (Exception cx)
@@ -248,6 +256,34 @@ namespace Psf2Csv
                 }
 
             }
+            /*
+            foreach (string s in Directory.GetFiles(dir, "*.sep", SearchOption.AllDirectories))
+            {
+                vab[0] = TruncateString(s, 255);
+                if (Path.GetDirectoryName(s).ToLowerInvariant() == Path.GetFullPath(dir).ToLowerInvariant())
+                {
+                    vab[1] = TruncateString(Path.GetFileNameWithoutExtension(s), 63); //use filename if in root
+                }
+                else
+                {
+                    vab[1] = TruncateString(Path.GetFileNameWithoutExtension(Path.GetDirectoryName(s)), 63); //if not in root use dir name
+                }
+                try
+                {
+                    vab[5] = FindVhVb(s, ".vh");
+                    vab[4] = "SEP FILE " + RandomNumberGenerator.GetInt32(int.MaxValue).ToString() + RandomNumberGenerator.GetInt32(int.MaxValue).ToString() + RandomNumberGenerator.GetInt32(int.MaxValue).ToString();
+                    
+                    vab[7] = FindVhVb(vab[5], "vb");
+                    //vab[4] += Base64Hash(vab[7]);
+                    dgvFiles.Rows.Add(vab);
+                }
+                catch (Exception cx)
+                {
+                    sbiStatusText.Text = cx.Message;
+                }
+
+            }
+            */
             if (File.Exists(qtpath))
             {
 
@@ -378,7 +414,7 @@ namespace Psf2Csv
             Process qlptool = new Process();
             foreach (int v in psflib.Values)
             {
-
+                //if only one track in the proposed sep file, make a psq file instead.
                 if (dosemu)
                 {
                     seq2sep.StartInfo.FileName = dospath;
