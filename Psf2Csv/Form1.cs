@@ -239,7 +239,7 @@ namespace Psf2Csv
                 }
                 else
                 {
-                    vab[1] = TruncateString(Path.GetFileNameWithoutExtension(Path.GetDirectoryName(s)), 63); //if not in root use dir name
+                    vab[1] = TruncateString(Path.GetDirectoryName(s), 63); //if not in root use dir name
                 }
 
                 try
@@ -256,6 +256,7 @@ namespace Psf2Csv
                 }
 
             }
+            //add sep count feature? for now just split the seps using a different program
             /*
             foreach (string s in Directory.GetFiles(dir, "*.sep", SearchOption.AllDirectories))
             {
