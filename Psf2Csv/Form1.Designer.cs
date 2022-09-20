@@ -47,12 +47,6 @@ namespace Psf2Csv
             this.ofdQLPTool = new System.Windows.Forms.OpenFileDialog();
             this.ofdVFSTool = new System.Windows.Forms.OpenFileDialog();
             this.dgvFiles = new System.Windows.Forms.DataGridView();
-            this.ofdAddFile = new System.Windows.Forms.OpenFileDialog();
-            this.sfdSaveList = new System.Windows.Forms.SaveFileDialog();
-            this.sbStatus = new System.Windows.Forms.StatusStrip();
-            this.sbiStatusText = new System.Windows.Forms.ToolStripStatusLabel();
-            this.fbdAddPsf = new System.Windows.Forms.FolderBrowserDialog();
-            this.fbdBatchPsf = new System.Windows.Forms.FolderBrowserDialog();
             this.colFileName = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.colVFSName = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.colTrackOf = new System.Windows.Forms.DataGridViewTextBoxColumn();
@@ -61,6 +55,14 @@ namespace Psf2Csv
             this.colVhName = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.colTemp = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.colVBName = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.ofdAddFile = new System.Windows.Forms.OpenFileDialog();
+            this.sfdSaveList = new System.Windows.Forms.SaveFileDialog();
+            this.sbStatus = new System.Windows.Forms.StatusStrip();
+            this.sbiStatusText = new System.Windows.Forms.ToolStripStatusLabel();
+            this.fbdAddPsf = new System.Windows.Forms.FolderBrowserDialog();
+            this.fbdBatchPsf = new System.Windows.Forms.FolderBrowserDialog();
+            this.chkDontMerge = new System.Windows.Forms.CheckBox();
+            this.lnkSepMode = new System.Windows.Forms.LinkLabel();
             ((System.ComponentModel.ISupportInitialize)(this.dgvFiles)).BeginInit();
             this.sbStatus.SuspendLayout();
             this.SuspendLayout();
@@ -161,6 +163,7 @@ namespace Psf2Csv
             this.lnkSeq2Sep.TabIndex = 11;
             this.lnkSeq2Sep.TabStop = true;
             this.lnkSeq2Sep.Text = "SEQ2SEP";
+            this.lnkSeq2Sep.Visible = false;
             this.lnkSeq2Sep.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.lnkSeq2Sep_LinkClicked);
             // 
             // txtSeq2Sep
@@ -171,6 +174,7 @@ namespace Psf2Csv
             this.txtSeq2Sep.Size = new System.Drawing.Size(204, 23);
             this.txtSeq2Sep.TabIndex = 10;
             this.txtSeq2Sep.Text = "seq2sep.exe";
+            this.txtSeq2Sep.Visible = false;
             // 
             // lnkDOSEMU
             // 
@@ -182,6 +186,7 @@ namespace Psf2Csv
             this.lnkDOSEMU.TabIndex = 13;
             this.lnkDOSEMU.TabStop = true;
             this.lnkDOSEMU.Text = "DOS emu";
+            this.lnkDOSEMU.Visible = false;
             this.lnkDOSEMU.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.lnkDOSEMU_LinkClicked);
             // 
             // txtDOSEMU
@@ -192,6 +197,7 @@ namespace Psf2Csv
             this.txtDOSEMU.Size = new System.Drawing.Size(162, 23);
             this.txtDOSEMU.TabIndex = 12;
             this.txtDOSEMU.Text = "msdos.exe";
+            this.txtDOSEMU.Visible = false;
             // 
             // ofdDOSEMU
             // 
@@ -245,43 +251,6 @@ namespace Psf2Csv
             this.dgvFiles.UserDeletingRow += new System.Windows.Forms.DataGridViewRowCancelEventHandler(this.dgvFiles_UserDeletingRow);
             this.dgvFiles.DragDrop += new System.Windows.Forms.DragEventHandler(this.dgvFiles_DragDrop);
             this.dgvFiles.DragEnter += new System.Windows.Forms.DragEventHandler(this.dgvFiles_DragEnter);
-            // 
-            // ofdAddFile
-            // 
-            this.ofdAddFile.Filter = resources.GetString("ofdAddFile.Filter");
-            this.ofdAddFile.RestoreDirectory = true;
-            this.ofdAddFile.Title = "Select file to add";
-            // 
-            // sfdSaveList
-            // 
-            this.sfdSaveList.Filter = "CSV files|*.csv|VFS files|*.vfs|All files|*.*";
-            this.sfdSaveList.Title = "Save CSV/VFS";
-            // 
-            // sbStatus
-            // 
-            this.sbStatus.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.sbiStatusText});
-            this.sbStatus.Location = new System.Drawing.Point(0, 499);
-            this.sbStatus.Name = "sbStatus";
-            this.sbStatus.Size = new System.Drawing.Size(790, 22);
-            this.sbStatus.TabIndex = 15;
-            this.sbStatus.Text = "statusStrip1";
-            // 
-            // sbiStatusText
-            // 
-            this.sbiStatusText.Name = "sbiStatusText";
-            this.sbiStatusText.Size = new System.Drawing.Size(39, 17);
-            this.sbiStatusText.Text = "Ready";
-            // 
-            // fbdAddPsf
-            // 
-            this.fbdAddPsf.Description = "PSF Set folder (Data files extracted with VGMToolbox)";
-            this.fbdAddPsf.UseDescriptionForTitle = true;
-            // 
-            // fbdBatchPsf
-            // 
-            this.fbdBatchPsf.Description = "Select directory containing PSF sets";
-            this.fbdBatchPsf.UseDescriptionForTitle = true;
             // 
             // colFileName
             // 
@@ -337,11 +306,74 @@ namespace Psf2Csv
             this.colVBName.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.Programmatic;
             this.colVBName.Visible = false;
             // 
+            // ofdAddFile
+            // 
+            this.ofdAddFile.Filter = resources.GetString("ofdAddFile.Filter");
+            this.ofdAddFile.RestoreDirectory = true;
+            this.ofdAddFile.Title = "Select file to add";
+            // 
+            // sfdSaveList
+            // 
+            this.sfdSaveList.Filter = "CSV files|*.csv|VFS files|*.vfs|All files|*.*";
+            this.sfdSaveList.Title = "Save CSV/VFS";
+            // 
+            // sbStatus
+            // 
+            this.sbStatus.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.sbiStatusText});
+            this.sbStatus.Location = new System.Drawing.Point(0, 499);
+            this.sbStatus.Name = "sbStatus";
+            this.sbStatus.Size = new System.Drawing.Size(790, 22);
+            this.sbStatus.TabIndex = 15;
+            this.sbStatus.Text = "statusStrip1";
+            this.sbStatus.DoubleClick += new System.EventHandler(this.sbStatus_DoubleClick);
+            // 
+            // sbiStatusText
+            // 
+            this.sbiStatusText.Name = "sbiStatusText";
+            this.sbiStatusText.Size = new System.Drawing.Size(39, 17);
+            this.sbiStatusText.Text = "Ready";
+            // 
+            // fbdAddPsf
+            // 
+            this.fbdAddPsf.Description = "PSF Set folder (Data files extracted with VGMToolbox)";
+            this.fbdAddPsf.UseDescriptionForTitle = true;
+            // 
+            // fbdBatchPsf
+            // 
+            this.fbdBatchPsf.Description = "Select directory containing PSF sets";
+            this.fbdBatchPsf.UseDescriptionForTitle = true;
+            // 
+            // chkDontMerge
+            // 
+            this.chkDontMerge.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.chkDontMerge.AutoSize = true;
+            this.chkDontMerge.Location = new System.Drawing.Point(15, 474);
+            this.chkDontMerge.Name = "chkDontMerge";
+            this.chkDontMerge.Size = new System.Drawing.Size(232, 19);
+            this.chkDontMerge.TabIndex = 16;
+            this.chkDontMerge.Text = "Don\'t Pack Multiple SEQ files into PSQs";
+            this.chkDontMerge.UseVisualStyleBackColor = true;
+            // 
+            // lnkSepMode
+            // 
+            this.lnkSepMode.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.lnkSepMode.AutoSize = true;
+            this.lnkSepMode.Location = new System.Drawing.Point(253, 475);
+            this.lnkSepMode.Name = "lnkSepMode";
+            this.lnkSepMode.Size = new System.Drawing.Size(125, 15);
+            this.lnkSepMode.TabIndex = 17;
+            this.lnkSepMode.TabStop = true;
+            this.lnkSepMode.Text = "Enable SEQ2SEP Mode";
+            this.lnkSepMode.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.lnkSepMode_LinkClicked);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(790, 521);
+            this.Controls.Add(this.lnkSepMode);
+            this.Controls.Add(this.chkDontMerge);
             this.Controls.Add(this.sbStatus);
             this.Controls.Add(this.dgvFiles);
             this.Controls.Add(this.lnkDOSEMU);
@@ -400,6 +432,8 @@ namespace Psf2Csv
         private System.Windows.Forms.DataGridViewTextBoxColumn colVhName;
         private System.Windows.Forms.DataGridViewTextBoxColumn colTemp;
         private System.Windows.Forms.DataGridViewTextBoxColumn colVBName;
+        private System.Windows.Forms.CheckBox chkDontMerge;
+        private System.Windows.Forms.LinkLabel lnkSepMode;
     }
 }
 

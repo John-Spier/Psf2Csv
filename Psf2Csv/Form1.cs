@@ -289,16 +289,28 @@ namespace Psf2Csv
             */
             if (File.Exists(qtpath))
             {
-
-
-                if (File.Exists(s2spath))
+                if (txtSeq2Sep.Visible)
                 {
-
-                    FixSepFiles(tempfn, dosemu, dospath, s2spath, dgvFiles, qtpath, sbiStatusText, !dosemu);
+                    if (chkDontMerge.Checked)
+                    {
+                        FixSepFiles(tempfn, dosemu, dospath, s2spath, dgvFiles, qtpath, sbiStatusText, true);
+                    }
+                    else
+                    {
+                        FixSeqFiles(qtpath, dgvFiles, sbiStatusText);
+                    }
                 }
                 else
                 {
-                    FixSeqFiles(qtpath, dgvFiles, sbiStatusText);
+                    if (File.Exists(s2spath))
+                    {
+
+                        FixSepFiles(tempfn, dosemu, dospath, s2spath, dgvFiles, qtpath, sbiStatusText, false);
+                    }
+                    else
+                    {
+                        FixSeqFiles(qtpath, dgvFiles, sbiStatusText);
+                    }
                 }
             }
             else
@@ -713,6 +725,32 @@ namespace Psf2Csv
                     }
                 }
             }
+        }
+
+        private void lnkSepMode_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+        {
+            if (MessageBox.Show("SEQ2SEP mode is buggy and not recommended! Do you still want to continue?", "PSF to CSV", MessageBoxButtons.YesNo, MessageBoxIcon.Exclamation) == DialogResult.Yes)
+            {
+                lnkSepMode.Visible = false;
+                chkDontMerge.Visible = false;
+                txtSeq2Sep.Visible = true;
+                txtDOSEMU.Visible = true;
+                lnkDOSEMU.Visible = true;
+                lnkSeq2Sep.Visible = true;
+                //MessageBox.Show("Double click the status bar to switch back to SEQ2PSQ mode.", "PSF to CSV", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                sbiStatusText.Text = "Double click the status bar to switch back to SEQ2PSQ mode.";
+            }
+        }
+
+        private void sbStatus_DoubleClick(object sender, EventArgs e)
+        {
+            lnkSepMode.Visible = true;
+            chkDontMerge.Visible = true;
+            txtSeq2Sep.Visible = false;
+            txtDOSEMU.Visible = false;
+            lnkDOSEMU.Visible = false;
+            lnkSeq2Sep.Visible = false;
+            sbiStatusText.Text = "Ready";
         }
     }
 
