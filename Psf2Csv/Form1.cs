@@ -41,6 +41,7 @@ namespace Psf2Csv
         };
 
         private const int sep_min = 0x01000000;
+        private const int seq_min = 0x01010000;
         public Form1()
         {
             InitializeComponent();
@@ -232,14 +233,15 @@ namespace Psf2Csv
             foreach (string s in Directory.GetFiles(dir, "*.seq", SearchOption.AllDirectories))
             {
                 vab[0] = TruncateString(s, 255);
-                
+
                 if (Path.GetDirectoryName(s).ToLowerInvariant() == Path.GetFullPath(dir).ToLowerInvariant())
+                //if (true)
                 {
                     vab[1] = TruncateString(Path.GetFileNameWithoutExtension(s), 63); //use filename if in root
                 }
                 else
                 {
-                    vab[1] = TruncateString(Path.GetDirectoryName(s), 63); //if not in root use dir name
+                    vab[1] = TruncateString(new DirectoryInfo(Path.GetDirectoryName(s)).Name, 63); //if not in root use dir name
                 }
 
                 try
@@ -291,7 +293,8 @@ namespace Psf2Csv
 
                 if (File.Exists(s2spath))
                 {
-                    FixSepFiles(tempfn, dosemu, dospath, s2spath, dgvFiles, qtpath, sbiStatusText);
+
+                    FixSepFiles(tempfn, dosemu, dospath, s2spath, dgvFiles, qtpath, sbiStatusText, !dosemu);
                 }
                 else
                 {
@@ -307,6 +310,7 @@ namespace Psf2Csv
         public void FixSeqFiles(string qtpath, DataGridView dgvFiles, ToolStripStatusLabel sbiStatusText)
         {
             Process qlptool = new Process();
+            
             foreach (DataGridViewRow f in dgvFiles.Rows)
             {
                 if (f.Cells[4].Value != null && f.Cells[6].Value == null)
@@ -315,13 +319,24 @@ namespace Psf2Csv
                     f.Cells[3].Value = "FFFFFF03";
                     f.Cells[6].ValueType = typeof(string);
                     f.Cells[6].Value = f.Cells[0].Value.ToString();
-                    f.Cells[0].Value = Path.GetDirectoryName(f.Cells[6].Value.ToString()) + Path.DirectorySeparatorChar + f.Cells[1].Value.ToString() + ".psq"; //use fixed name in case of manually copying files out
+                    string dir_filename = Path.GetDirectoryName(f.Cells[6].Value.ToString()) + Path.DirectorySeparatorChar + f.Cells[1].Value.ToString() + ".psq"; //use fixed name in case of manually copying files out
+                    if (File.Exists(dir_filename))
+                    {
+                        f.Cells[0].Value = Path.GetDirectoryName(f.Cells[6].Value.ToString()) + Path.DirectorySeparatorChar + Path.GetFileNameWithoutExtension(f.Cells[6].Value.ToString()) + ".psq";
+                    }
+                    else
+                    {
+                        f.Cells[0].Value = dir_filename;
+                    }
+                    
                     qlptool.StartInfo.ArgumentList.Clear();
                     qlptool.StartInfo.FileName = qtpath;
                     qlptool.StartInfo.ArgumentList.Add(f.Cells[0].Value.ToString());
                     qlptool.StartInfo.ArgumentList.Add(f.Cells[6].Value.ToString());
                     qlptool.StartInfo.ArgumentList.Add(f.Cells[5].Value.ToString());
                     qlptool.StartInfo.ArgumentList.Add(f.Cells[7].Value.ToString());
+                    qlptool.StartInfo.UseShellExecute = false;
+                    qlptool.StartInfo.CreateNoWindow = true;
                     try
                     {
                         qlptool.Start();
@@ -334,153 +349,212 @@ namespace Psf2Csv
             }
         }
 
-        public void FixSepFiles(bool tempfn, bool dosemu, string dospath, string s2spath, DataGridView dgvFiles, string qtpath, ToolStripStatusLabel sbiStatusText)
+        public void FixSepFiles(bool tempfn, bool dosemu, string dospath, string s2spath, DataGridView dgvFiles, string qtpath, ToolStripStatusLabel sbiStatusText, bool dont_make_seps)
         {
+            //int sep_max = 16;
             dgvFiles.ClearSelection();
 
             Dictionary<string, int> psflib = new Dictionary<string, int>();
             int skip;
             int seq;
             string tempfile;
-
-            foreach (DataGridViewRow f in dgvFiles.Rows)
+            if (dont_make_seps)
             {
-                if (f.Cells[4].Value != null && f.Cells[6].Value == null)
+                foreach (DataGridViewRow f in dgvFiles.Rows)
                 {
-
-                    if (psflib.TryGetValue(f.Cells[4].Value.ToString(), out seq))
+                    if (f.Cells[4].Value != null && f.Cells[6].Value == null)
                     {
-                        if (tempfn)
+                        if (psflib.TryGetValue(f.Cells[4].Value.ToString(), out seq))
                         {
-                            tempfile = Path.GetFileNameWithoutExtension(Path.GetRandomFileName()) + ".seq";
-                            while (File.Exists(tempfile)) //avoid collision even though it will probably never happen
-                            {
-                                tempfile = Path.GetFileNameWithoutExtension(Path.GetRandomFileName()) + ".seq";
-                            }
-                            //MessageBox.Show(Path.GetFullPath(tempfile), f.Cells[0].Value.ToString());
-                            File.Copy(f.Cells[0].Value.ToString(), Path.GetFullPath(tempfile));
+                            dgvFiles.Rows[seq].Cells[4].Value += (" " + '"' + f.Cells[0].Value.ToString() + '"');
+                            f.Cells[2].Value = seq.ToString();
+                            skip = seq_min + (int)dgvFiles.Rows[seq].Cells[6].Value;
+                            f.Cells[3].Value = skip.ToString("X8");
+                            dgvFiles.Rows[seq].Cells[6].Value = (int)dgvFiles.Rows[seq].Cells[6].Value + 1;
+                            //f.Cells[0].Value = Path.GetFullPath(dgvFiles.Rows[seq].Cells[0].Value.ToString());
+                            f.Cells[4].Value = null;
                         }
                         else
                         {
-                            tempfile = '"' + f.Cells[0].Value.ToString() + '"';
+                            psflib.Add(f.Cells[4].Value.ToString(), f.Index);
+                            f.Cells[6].ValueType = typeof(int);
+                            f.Cells[6].Value = 1;
+                            f.Cells[4].Value = '"' + f.Cells[0].Value.ToString() + '"';
+                            f.Cells[0].Value = Path.GetDirectoryName(f.Cells[0].Value.ToString()) + Path.DirectorySeparatorChar + f.Cells[1].Value.ToString() + ".psq";
+                            
+                            f.Cells[2].Value = "-1";
+                            f.Cells[3].Value = seq_min.ToString("X8");
                         }
-                        dgvFiles.Rows[seq].Cells[4].Value += (" " + tempfile);
-                        f.Cells[2].Value = seq.ToString();
-                        skip = sep_min + (int)dgvFiles.Rows[seq].Cells[6].Value;
-                        f.Cells[3].Value = skip.ToString("X8");
-                        dgvFiles.Rows[seq].Cells[6].Value = (int)dgvFiles.Rows[seq].Cells[6].Value + 1;
-                        //f.Cells[0].Value = Path.GetFullPath(dgvFiles.Rows[seq].Cells[0].Value.ToString());
-                        f.Cells[4].Value = null;
+                    }
+
+                }
+                Process qlptool = new Process();
+                foreach (int v in psflib.Values)
+                {
+                    qlptool.StartInfo.ArgumentList.Clear();
+                    qlptool.StartInfo.FileName = qtpath;
+                    qlptool.StartInfo.UseShellExecute = false;
+                    qlptool.StartInfo.CreateNoWindow = true;
+                    qlptool.StartInfo.Arguments = '"' + dgvFiles.Rows[v].Cells[0].Value.ToString() + "\" " + dgvFiles.Rows[v].Cells[4].Value.ToString() + " \"" + dgvFiles.Rows[v].Cells[5].Value.ToString() + "\" \"" + dgvFiles.Rows[v].Cells[7].Value.ToString() + '"';
+                    //MessageBox.Show(qlptool.StartInfo.Arguments);
+                    qlptool.Start();
+                    qlptool.WaitForExit();
+                }
+                }
+            else
+            {
+                foreach (DataGridViewRow f in dgvFiles.Rows)
+                {
+                    if (f.Cells[4].Value != null && f.Cells[6].Value == null)
+                    {
+
+                        if (psflib.TryGetValue(f.Cells[4].Value.ToString(), out seq))
+                        {
+                            if (tempfn)
+                            {
+                                tempfile = Path.GetFileNameWithoutExtension(Path.GetRandomFileName()) + ".seq";
+                                while (File.Exists(tempfile)) //avoid collision even though it will probably never happen
+                                {
+                                    tempfile = Path.GetFileNameWithoutExtension(Path.GetRandomFileName()) + ".seq";
+                                }
+                                //MessageBox.Show(Path.GetFullPath(tempfile), f.Cells[0].Value.ToString());
+                                File.Copy(f.Cells[0].Value.ToString(), Path.GetFullPath(tempfile));
+                            }
+                            else
+                            {
+                                tempfile = '"' + f.Cells[0].Value.ToString() + '"';
+                            }
+                            dgvFiles.Rows[seq].Cells[4].Value += (" " + tempfile);
+                            f.Cells[2].Value = seq.ToString();
+                            skip = sep_min + (int)dgvFiles.Rows[seq].Cells[6].Value;
+                            f.Cells[3].Value = skip.ToString("X8");
+                            dgvFiles.Rows[seq].Cells[6].Value = (int)dgvFiles.Rows[seq].Cells[6].Value + 1;
+                            //f.Cells[0].Value = Path.GetFullPath(dgvFiles.Rows[seq].Cells[0].Value.ToString());
+                            f.Cells[4].Value = null;
+                        }
+                        else
+                        {
+                            psflib.Add(f.Cells[4].Value.ToString(), f.Index);
+                            f.Cells[6].ValueType = typeof(int);
+                            f.Cells[6].Value = 1;
+                            if (tempfn)
+                            {
+                                string tempsep = Path.GetFileNameWithoutExtension(Path.GetRandomFileName()) + ".sep";
+                                while (File.Exists(tempsep))
+                                {
+                                    tempsep = Path.GetFileNameWithoutExtension(Path.GetRandomFileName()) + ".sep";
+                                }
+                                tempfile = Path.GetFileNameWithoutExtension(Path.GetRandomFileName()) + ".seq";
+                                while (File.Exists(tempfile))
+                                {
+                                    tempfile = Path.GetFileNameWithoutExtension(Path.GetRandomFileName()) + ".seq";
+                                }
+                                File.Copy(f.Cells[0].Value.ToString(), Path.GetFullPath(tempfile));
+                                tempfile = "-o " + tempsep + " " + tempfile;
+                                f.Cells[0].Value = tempsep;
+                            }
+
+                            else
+                            {
+                                f.Cells[0].Value = Path.GetDirectoryName(f.Cells[0].Value.ToString()) + Path.DirectorySeparatorChar + f.Cells[1].Value.ToString() + ".sep";
+                                tempfile = "-o " + '"' + f.Cells[0].Value.ToString() + '"';
+                            }
+
+                            f.Cells[4].Value = tempfile;
+                            f.Cells[2].Value = "-1";
+                            //f.Cells[3].Value = "FFFFFF04";
+                            //non-track SEP value will always restart.
+                            f.Cells[3].Value = sep_min.ToString("X8");
+                        }
+                    }
+                }
+                Process seq2sep = new Process();
+                Process qlptool = new Process();
+                foreach (int v in psflib.Values)
+                {
+                    //if only one track in the proposed sep file, make a psq file instead.
+                    if (dosemu)
+                    {
+                        seq2sep.StartInfo.FileName = dospath;
+                        seq2sep.StartInfo.Arguments = s2spath + " " + dgvFiles.Rows[v].Cells[4].Value.ToString();
+                        //MessageBox.Show(seq2sep.StartInfo.Arguments, seq2sep.StartInfo.FileName);
                     }
                     else
                     {
-                        psflib.Add(f.Cells[4].Value.ToString(), f.Index);
-                        f.Cells[6].ValueType = typeof(int);
-                        f.Cells[6].Value = 1;
+
+                        seq2sep.StartInfo.FileName = Path.GetFullPath(s2spath);
+                        seq2sep.StartInfo.Arguments = dgvFiles.Rows[v].Cells[4].Value.ToString();
+                        //MessageBox.Show(seq2sep.StartInfo.Arguments, seq2sep.StartInfo.FileName);
+                    }
+                    try
+                    {
+                        seq2sep.StartInfo.UseShellExecute = false;
+                        seq2sep.StartInfo.CreateNoWindow = true;
+                        seq2sep.Start();
+                        seq2sep.WaitForExit();
                         if (tempfn)
                         {
-                            string tempsep = Path.GetFileNameWithoutExtension(Path.GetRandomFileName()) + ".sep";
-                            while (File.Exists(tempsep))
-                            {
-                                tempsep = Path.GetFileNameWithoutExtension(Path.GetRandomFileName()) + ".sep";
-                            }
-                            tempfile = Path.GetFileNameWithoutExtension(Path.GetRandomFileName()) + ".seq";
-                            while (File.Exists(tempfile))
-                            {
-                                tempfile = Path.GetFileNameWithoutExtension(Path.GetRandomFileName()) + ".seq";
-                            }
-                            File.Copy(f.Cells[0].Value.ToString(), Path.GetFullPath(tempfile));
-                            tempfile = "-o " + tempsep + " " + tempfile;
-                            f.Cells[0].Value = tempsep;
+                            dgvFiles.Rows[v].Cells[0].Value = Path.GetFullPath(dgvFiles.Rows[v].Cells[0].Value.ToString());
+                        }
+                        string trkn = Path.GetDirectoryName(dgvFiles.Rows[v].Cells[0].Value.ToString()) + Path.DirectorySeparatorChar + Path.GetFileNameWithoutExtension(dgvFiles.Rows[v].Cells[0].Value.ToString()) + ".vt";
+                        string pspn = Path.GetDirectoryName(dgvFiles.Rows[v].Cells[5].Value.ToString()) + Path.DirectorySeparatorChar + dgvFiles.Rows[v].Cells[1].Value.ToString() + ".psp";
+                        while (File.Exists(pspn))
+                        {
+                            pspn = Path.GetDirectoryName(dgvFiles.Rows[v].Cells[5].Value.ToString()) + Path.DirectorySeparatorChar + dgvFiles.Rows[v].Cells[1].Value.ToString() + "__" + Path.GetFileNameWithoutExtension(Path.GetRandomFileName()) + ".psp";
+                        }
+                        short tracknum = Convert.ToInt16(dgvFiles.Rows[v].Cells[6].Value);
+                        byte[] trackfile = new byte[2];
+                        if (BitConverter.IsLittleEndian)
+                        {
+                            trackfile = BitConverter.GetBytes(tracknum);
                         }
                         else
                         {
-                            f.Cells[0].Value = Path.GetDirectoryName(f.Cells[0].Value.ToString()) + Path.DirectorySeparatorChar + f.Cells[1].Value.ToString() + ".sep";
-                            tempfile = "-o " + '"' + f.Cells[0].Value.ToString() + '"';
+                            trackfile = BitConverter.GetBytes(tracknum);
+                            byte swapend = trackfile[1];
+                            trackfile[1] = trackfile[0];
+                            trackfile[0] = swapend;
                         }
+                        BinaryWriter writer = new BinaryWriter(File.OpenWrite(trkn));
+                        writer.Write(trackfile);
+                        writer.Flush();
+                        writer.Close();
+                        qlptool.StartInfo.ArgumentList.Clear();
+                        qlptool.StartInfo.FileName = qtpath;
+                        //qlptool.StartInfo.FileName = "cmd.exe";
+                        //qlptool.StartInfo.ArgumentList.Add("/k");
+                        //qlptool.StartInfo.ArgumentList.Add(qtpath);
+                        qlptool.StartInfo.ArgumentList.Add(pspn);
+                        qlptool.StartInfo.ArgumentList.Add(dgvFiles.Rows[v].Cells[0].Value.ToString());
+                        qlptool.StartInfo.ArgumentList.Add(dgvFiles.Rows[v].Cells[5].Value.ToString());
+                        qlptool.StartInfo.ArgumentList.Add(dgvFiles.Rows[v].Cells[7].Value.ToString());
+                        qlptool.StartInfo.ArgumentList.Add(trkn);
+                        qlptool.StartInfo.UseShellExecute = false;
+                        qlptool.StartInfo.CreateNoWindow = true;
+                        qlptool.Start();
+                        qlptool.WaitForExit();
 
-                        f.Cells[4].Value = tempfile;
-                        f.Cells[2].Value = "-1";
-                        //f.Cells[3].Value = "FFFFFF04";
-                        //non-track SEP value will always restart.
-                        f.Cells[3].Value = sep_min.ToString("X8");
+
+                        dgvFiles.Rows[v].Cells[0].Value = pspn;
+
+
                     }
+                    catch (Exception px)
+                    {
+                        sbiStatusText.Text = px.Message;
+                    }
+                }
+                if (tempfn)
+                {
+                    DelFileExt(Directory.GetCurrentDirectory(), "*.seq");
+                    DelFileExt(Directory.GetCurrentDirectory(), "*.sep");
+                    DelFileExt(Directory.GetCurrentDirectory(), "*.vt");
                 }
             }
 
 
 
 
-            Process seq2sep = new Process();
-            Process qlptool = new Process();
-            foreach (int v in psflib.Values)
-            {
-                //if only one track in the proposed sep file, make a psq file instead.
-                if (dosemu)
-                {
-                    seq2sep.StartInfo.FileName = dospath;
-                    seq2sep.StartInfo.Arguments = s2spath + " " + dgvFiles.Rows[v].Cells[4].Value.ToString();
-                    //MessageBox.Show(seq2sep.StartInfo.Arguments, seq2sep.StartInfo.FileName);
-                }
-                else
-                {
-                    
-                    seq2sep.StartInfo.FileName = Path.GetFullPath(s2spath);
-                    seq2sep.StartInfo.Arguments = dgvFiles.Rows[v].Cells[4].Value.ToString();
-                    //MessageBox.Show(seq2sep.StartInfo.Arguments, seq2sep.StartInfo.FileName);
-                }
-                try
-                {
-                    seq2sep.Start();
-                    seq2sep.WaitForExit();
-                    if (tempfn)
-                    {
-                        dgvFiles.Rows[v].Cells[0].Value = Path.GetFullPath(dgvFiles.Rows[v].Cells[0].Value.ToString());
-                    }
-                    string trkn = Path.GetDirectoryName(dgvFiles.Rows[v].Cells[0].Value.ToString()) + Path.DirectorySeparatorChar + Path.GetFileNameWithoutExtension(dgvFiles.Rows[v].Cells[0].Value.ToString()) + ".vt";
-                    string pspn = Path.GetDirectoryName(dgvFiles.Rows[v].Cells[5].Value.ToString()) + Path.DirectorySeparatorChar + dgvFiles.Rows[v].Cells[1].Value.ToString() + ".psp";
-                    short tracknum = Convert.ToInt16(dgvFiles.Rows[v].Cells[6].Value);
-                    byte[] trackfile = new byte[2];
-                    if (BitConverter.IsLittleEndian)
-                    {
-                        trackfile = BitConverter.GetBytes(tracknum);
-                    } else
-                    {
-                        trackfile = BitConverter.GetBytes(tracknum);
-                        byte swapend = trackfile[1];
-                        trackfile[1] = trackfile[0];
-                        trackfile[0] = swapend;
-                    }
-                    BinaryWriter writer = new BinaryWriter(File.OpenWrite(trkn));
-                    writer.Write(trackfile);
-                    writer.Flush();
-                    writer.Close();
-                    qlptool.StartInfo.ArgumentList.Clear();
-                    qlptool.StartInfo.FileName = qtpath;
-                    //qlptool.StartInfo.FileName = "cmd.exe";
-                    //qlptool.StartInfo.ArgumentList.Add("/k");
-                    //qlptool.StartInfo.ArgumentList.Add(qtpath);
-                    qlptool.StartInfo.ArgumentList.Add(pspn);
-                    qlptool.StartInfo.ArgumentList.Add(dgvFiles.Rows[v].Cells[0].Value.ToString());
-                    qlptool.StartInfo.ArgumentList.Add(dgvFiles.Rows[v].Cells[5].Value.ToString());
-                    qlptool.StartInfo.ArgumentList.Add(dgvFiles.Rows[v].Cells[7].Value.ToString());
-                    qlptool.StartInfo.ArgumentList.Add(trkn);
-
-                    qlptool.Start();
-                    qlptool.WaitForExit();
-                    dgvFiles.Rows[v].Cells[0].Value = pspn;
-                }
-                catch (Exception px)
-                {
-                    sbiStatusText.Text = px.Message;
-                }
-            }
-            if (tempfn)
-            {
-                DelFileExt(Directory.GetCurrentDirectory(), "*.seq");
-                DelFileExt(Directory.GetCurrentDirectory(), "*.sep");
-                DelFileExt(Directory.GetCurrentDirectory(), "*.vt");
-            }
         }
 
         public string Base64Hash (string file)
@@ -513,7 +587,7 @@ namespace Psf2Csv
                 }
                 else
                 {
-                    foreach (string t in Directory.GetFiles(Path.GetDirectoryName(s), ext, SearchOption.AllDirectories))
+                    foreach (string t in Directory.GetFiles(Path.GetDirectoryName(s), "*" + ext, SearchOption.AllDirectories))
                     {
                         return t;
                     }
@@ -598,6 +672,8 @@ namespace Psf2Csv
                         vfstool.StartInfo.ArgumentList.Add("-c");
                         vfstool.StartInfo.ArgumentList.Add(tempcsv);
                         vfstool.StartInfo.ArgumentList.Add(filename);
+                        vfstool.StartInfo.UseShellExecute = false;
+                        vfstool.StartInfo.CreateNoWindow = true;
                         vfstool.Start();
                         vfstool.WaitForExit();
                         File.Delete(tempcsv);
